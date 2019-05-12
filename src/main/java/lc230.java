@@ -32,25 +32,41 @@ public  class lc230
         int i = 0;
         int len = treeNodes.length;
         int count = 1;
-        int count_next = count << 1;
+        int j = count;
         while(true)
         {
-            int j = 0;
-            for(int k = 0; k < count; k++)
-            for(j=0;j<count;j++)
-            {
-                if(j+i>=len)
+            int jj = 0;
+            for (int ii = 0; ii < count; ii++) {
+                if (treeNodes[i + ii] == null)
+                    continue;
+                if (j + jj < treeNodes.length)
+                    treeNodes[i + ii].left = treeNodes[j + jj];
+                else
                     return treeNodes[0];
-                if(j%2==0)
-                    treeNodes[i+j] = null;
+                jj++;
+                if (j + jj < treeNodes.length)
+                    treeNodes[i + ii].right = treeNodes[j + jj];
+                else
+                    return treeNodes[0];
+                jj++;
             }
-
-
+            i = j;
+            count <<= 1;
+            j = count + j;
         }
+    }
+
+    private TreeNode createTreeNodeRoot(Integer[] nums) {
+        TreeNode[] treeNodes = createTNs(nums);
+        return linkTNs(treeNodes);
     }
     @Test
     public void test1()
     {
+        Integer[] nums = {3, 1, 4, null, 2};
+        TreeNode root = createTreeNodeRoot(nums);
+        int result = kthSmallest(root, 1);
+        System.out.println(result);
     }
 
     boolean found = false;
