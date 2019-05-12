@@ -60,13 +60,23 @@ public  class lc230
         TreeNode[] treeNodes = createTNs(nums);
         return linkTNs(treeNodes);
     }
+
+    private void testTreeNodes(Integer[] nums, int k) {
+        TreeNode root = createTreeNodeRoot(nums);
+        int result = kthSmallest(root, k);
+        System.out.println(result);
+    }
     @Test
     public void test1()
     {
         Integer[] nums = {3, 1, 4, null, 2};
-        TreeNode root = createTreeNodeRoot(nums);
-        int result = kthSmallest(root, 1);
-        System.out.println(result);
+        testTreeNodes(nums, 1);
+    }
+
+    @Test
+    public void test2() {
+        Integer[] nums = {5, 3, 6, 2, 4, null, null, 1};
+        testTreeNodes(nums, 3);
     }
 
     boolean found = false;
