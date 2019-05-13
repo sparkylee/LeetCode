@@ -79,35 +79,29 @@ public  class lc230
         testTreeNodes(nums, 3);
     }
 
+    //////////////////////
     boolean found = false;
     int result = 0;
     int count = 0;
-    int countLeft(TreeNode root, int k)
+
+    void countLeft(TreeNode root, int k)
     {
         if(this.found || root==null)
-            return 0;
-        int lc = countLeft(root.left, k);
-        if(this.found)
-            return 0;
-        this.count += lc;
-        if(this.count==k-1)
-        {
-            this.found = true;
-            this.result = root.val;
-        }
+            return;
+        countLeft(root.left, k);
         this.count ++;
-        if(this.count==k-1)
+        if (this.count == k)
         {
             this.found = true;
             this.result = root.val;
-            return 0;
+            return;
         }
-        lc = countLeft(root.right, k);
-        return (this.count + lc);
+        countLeft(root.right, k);
+        return;
     }
     public int kthSmallest(TreeNode root, int k) {
         countLeft(root,k);
-        return result;
+        return this.result;
     }
 
 }
