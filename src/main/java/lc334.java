@@ -4,33 +4,27 @@ public class lc334 {
 
 
     public boolean increasingTriplet(int[] nums) {
-        int i = 0;
-        int ii = 0;
-        int j = 0;
-        int k = 0;
-        int jj = 0;
-
+        int i = 0, j = 0, k = 0, jj = 0;
         j = i + 1;
-        while (j < nums.length) {
-            if (nums[j] > nums[i])
-                break;
+        if (i >= nums.length)
+            return false;
+        while (j < nums.length && nums[j] <= nums[i])
             j++;
-        }
+        if (j >= nums.length)
+            return false;
         k = j + 1;
         while (k < nums.length) {
-            if (nums[k] > nums[j]) {
+            if (nums[k] > nums[j])
                 return true;
-            }
-            if (nums[k] < nums[j] && nums[k] > nums[i]) {
+            if (nums[k] <= nums[j] && nums[k] >= nums[i]) {
                 j = k;
                 k = j + 1;
                 continue;
             }
             if (nums[k] < nums[i]) {
-                //look for another value l that is smaller than nums[j]
-                ii = k;
-                jj = ii + 1;
-                while (jj < nums.length && nums[jj] <= nums[ii]) {
+                //look for another value that is smaller than nums[j]
+                jj = k + 1;
+                while (jj < nums.length && nums[jj] <= nums[k]) {
                     jj++;
                 }
                 if (jj >= nums.length)
