@@ -1,4 +1,4 @@
-import com.sun.org.apache.bcel.internal.generic.RETURN;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +15,25 @@ public class lc501 {
         }
     }
 
+    ////
+    private TreeNode TN(int n) {
+        return new TreeNode(n);
+    }
+
+    @Test
+    public void test1() {
+        TreeNode tn1_1 = TN(1), tn2_1 = TN(2), tn2_2 = TN(2);
+        tn1_1.right = tn2_1;
+        tn2_1.left = tn2_2;
+        int[] results = this.findMode(tn1_1);
+        printInts(results);
+    }
+
+    private void printInts(int[] results) {
+        for (int i : results)
+            System.out.println(i);
+        System.out.println();
+    }
     ////////////////////////
     public class Result {
         List<Integer> results = new ArrayList<>();
@@ -26,29 +45,39 @@ public class lc501 {
         int count;
     }
 
-    private void findMode(TreeNode root, Result result, Element element) {
-        if (root == null || result == null || element == null) return;
-        findMode(root.left, result, element);
+    private void add2Result(Result result, Element element) {
+        if (result.totalCount == element.count && element.count > 0) {
+            result.results.add(element.value);
+        } else if (result.totalCount < element.count) {
+            // result.totalCount < element.count
+            result.results.clear();
+            result.results.add(element.value);
+            result.totalCount = element.count;
+        }
+    }
+
+    private void checkNode(TreeNode root, Result result, Element element) {
         if (element.count == 0 || element.value == root.val) // the same value or the initial value
             element.count++;
         else { // a new value
-            if (result.totalCount == element.count) {
-                result.results.add(element.value);
-            } else if (result.totalCount < element.count) {
-                // result.totalCount < element.count
-                result.results.clear();
-                result.results.add(element.value);
-                result.totalCount = element.count;
-            }
             element.count = 1;
         }
         element.value = root.val;
+    }
+    private void findMode(TreeNode root, Result result, Element element) {
+        if (root == null || result == null || element == null) return;
+        findMode(root.left, result, element);
+        add2Result(result, element);
+        checkNode(root, result, element);
+        add2Result(result, element);
         findMode(root.right, result, element);
     }
 
     public int[] findMode(TreeNode root) {
-
-        return null;
+        Result result = new Result();
+        Element element = new Element();
+        findMode(root, result, element);
+        return result.results.stream().mapToInt(i -> i).toArray();
     }
 
 }
