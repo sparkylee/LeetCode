@@ -29,6 +29,17 @@ public class lc501 {
         printInts(results);
     }
 
+    @Test
+    public void test2() {
+        TreeNode tn1_1 = TN(1), tn1_2 = TN(1), tn1_3 = TN(1), tn2_1 = TN(2), tn2_2 = TN(2);
+        tn1_1.left = tn1_2;
+        tn1_2.left = tn1_3;
+        tn1_1.right = tn2_1;
+        tn2_1.left = tn2_2;
+        int[] results = this.findMode(tn1_1);
+        printInts(results);
+    }
+
     private void printInts(int[] results) {
         for (int i : results)
             System.out.println(i);
@@ -60,6 +71,7 @@ public class lc501 {
         if (element.count == 0 || element.value == root.val) // the same value or the initial value
             element.count++;
         else { // a new value
+            add2Result(result, element);
             element.count = 1;
         }
         element.value = root.val;
@@ -67,9 +79,7 @@ public class lc501 {
     private void findMode(TreeNode root, Result result, Element element) {
         if (root == null || result == null || element == null) return;
         findMode(root.left, result, element);
-        add2Result(result, element);
         checkNode(root, result, element);
-        add2Result(result, element);
         findMode(root.right, result, element);
     }
 
@@ -77,6 +87,8 @@ public class lc501 {
         Result result = new Result();
         Element element = new Element();
         findMode(root, result, element);
+        // at the final exit need to check the remaining element
+        add2Result(result, element);
         return result.results.stream().mapToInt(i -> i).toArray();
     }
 
