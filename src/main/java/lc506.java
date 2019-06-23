@@ -38,21 +38,35 @@ public class lc506 {
                 && (start + 1 <= end) && start >= 0 && end < nodes.length)) return;
         int x = start, y = end;
         while (true) {
-            while (nodes[x].se(nodes[i])) {
+            while (x < i && nodes[x].se(nodes[i])) {
                 if (nodes[x].eq(nodes[i])) {
                     swapNode(nodes, x, i);
                     i--;
                 } else
                     x++;
             }
-
-            while (nodes[y].ge(nodes[j])) {
+            while (y > j && nodes[y].ge(nodes[j])) {
                 if (nodes[y].eq(nodes[j])) {
                     swapNode(nodes, y, j);
                     j++;
                 } else
                     y--;
             }
+            if (nodes[x].gt(nodes[y])) {
+                if (x == i) { // nodes[i]/nodes[x] is the chosen one
+                    swapNode(nodes, i, y);
+                    swapNode(nodes, y, j + 1);
+                    i++;
+                    j++;
+                }
+                if (y == j) {
+                    swapNode(nodes, j, x);
+                    swapNode(nodes, x, i - 1);
+                    i--;
+                    j--;
+                }
+            } else
+                break;
 
         }
     }
