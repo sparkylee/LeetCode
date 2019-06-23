@@ -3,7 +3,24 @@ import org.junit.Test;
 
 public class lc506 {
 
+    @Test
+    public void t() {
+//        int [] nums = {5, 4, 3, 2, 1 };
+//        int [] nums = {3};
+//        int [] nums = {3,2};
+//        int [] nums = {2,3};
+//        int [] nums = {2,1,3};
+        int[] nums = {2, 1, 3, 4};
+        test(nums);
+    }
 
+    private void test(int[] nums) {
+        String[] strs = findRelativeRanks(nums);
+        for (String str : strs) {
+            System.out.print(str + ' ');
+        }
+        System.out.println();
+    }
     //////////////
     public class Node {
         int val;
@@ -63,13 +80,17 @@ public class lc506 {
                     swapNode(nodes, y, j + 1);
                     i++;
                     j++;
-                }
-                if (y == j) {
+                } else if (y == j) {
                     swapNode(nodes, j, x);
                     swapNode(nodes, x, i - 1);
                     i--;
                     j--;
+                } else {
+                    swapNode(nodes, x, y);
+                    x++;
+                    y--;
                 }
+
             } else
                 break;
 
@@ -80,6 +101,18 @@ public class lc506 {
         quickSort(nodes, j + 1, middle_second, middle_second, end);
     }
 
+    private String order2Str(int o) {
+        switch (o) {
+            case 1:
+                return "Gold Medal";
+            case 2:
+                return "Silver Medal";
+            case 3:
+                return "Bronze Medal";
+            default:
+                return String.valueOf(o);
+        }
+    }
     public String[] findRelativeRanks(int[] nums) {
         if (nums == null || nums.length == 0) {
             return new String[0];
@@ -91,7 +124,7 @@ public class lc506 {
         int middle = (nodes.length - 1) / 2;
         quickSort(nodes, 0, middle, middle, (nodes.length - 1));
         for (int i = 0; i < nums.length; i++) {
-            nodes[i].order = i;
+            nodes[i].order = nums.length - i;
         }
         Node[] nodes_ordered = new Node[nums.length];
         for (int i = 0; i < nums.length; i++) {
@@ -99,7 +132,7 @@ public class lc506 {
         }
         String[] strs = new String[nums.length];
         for (int i = 0; i < nums.length; i++) {
-            strs[i] = String.valueOf(nodes_ordered[i].order);
+            strs[i] = order2Str(nodes_ordered[i].order);
         }
         return strs;
     }
