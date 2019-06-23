@@ -10,6 +10,11 @@ public class lc506 {
         int i;
         int order;
 
+        Node(int val, int i, int order) {
+            this.val = val;
+            this.i = i;
+            this.order = order;
+        }
         boolean se(Node n) {
             return n != null && this.val <= n.val;
         }
@@ -69,9 +74,33 @@ public class lc506 {
                 break;
 
         }
+        int middle_first = (start + i - 1) / 2;
+        int middle_second = (j + 1 + end) / 2;
+        quickSort(nodes, start, middle_first, middle_first, i - 1);
+        quickSort(nodes, j + 1, middle_second, middle_second, end);
     }
 
     public String[] findRelativeRanks(int[] nums) {
-        return null;
+        if (nums == null || nums.length == 0) {
+            return new String[0];
+        }
+        Node[] nodes = new Node[nums.length];
+        for (int i = 0; i < nums.length; i++) {
+            nodes[i] = new Node(nums[i], i, 0);
+        }
+        int middle = (nodes.length - 1) / 2;
+        quickSort(nodes, 0, middle, middle, (nodes.length - 1));
+        for (int i = 0; i < nums.length; i++) {
+            nodes[i].order = i;
+        }
+        Node[] nodes_ordered = new Node[nums.length];
+        for (int i = 0; i < nums.length; i++) {
+            nodes_ordered[nodes[i].i] = nodes[i];
+        }
+        String[] strs = new String[nums.length];
+        for (int i = 0; i < nums.length; i++) {
+            strs[i] = String.valueOf(nodes_ordered[i].order);
+        }
+        return strs;
     }
 }
