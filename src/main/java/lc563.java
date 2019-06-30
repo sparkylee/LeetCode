@@ -48,4 +48,8 @@ public class lc563 {
         return calcTilt(root);
     }
 
+    public boolean compare(String s1, String s2) {
+        return s1.equals(s2);
+    }
+
 }
