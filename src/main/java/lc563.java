@@ -25,6 +25,7 @@ public class lc563 {
         int val = calcSum(root.left);
         val += root.val;
         val += calcSum(root.right);
+        root.val = val;
         return val;
     }
 
