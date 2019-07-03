@@ -18,11 +18,12 @@ public class lc599 {
         int count = -1;
         for (int i = 0; i < list1.length; i++) {
             Integer j = map2.get(list1[i]);
-            if (j == null || (i + j) < count) continue;
+            if (j == null || ((i + j) > count && count != -1)) continue;
             if ((i + j) == count) {
                 list.add(list1[i]);
             }
-            if ((i + j) > count) {
+            if ((i + j) < count || count == -1) {
+                list.clear();
                 list.add(list1[i]);
                 count = i + j;
             }
