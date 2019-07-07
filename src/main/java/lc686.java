@@ -36,18 +36,20 @@ public class lc686 {
             isMatched = true;
             for (; j < s.length(); j++) {
                 //  i+j is the index of the target string
-                if (s.charAt(j) != t.charAt(i + j)) {
-                    if (j <= 1) { // only match zero or one character
-                        i = i + 1;
-                        j = 0;
-                    } else {
-                        int delta = shift[j - 1] == -1 ? j : shift[j - 1];
-                        i = i + delta;
-                        j = j - delta; // = (i+j) - (i+delta) = j - delta;
-                    }
-                    isMatched = false;
-                    break;
+                if (s.charAt(j) == t.charAt(i + j)) continue;
+                if (j <= 1) { // only match zero or one character
+                    i = i + 1;
+                    j = 0;
+                } else { // matched with two or more characters
+                    // shift[0] is always -1 thus j must be greater than 1
+                    int delta = shift[j - 1] == -1 ? j : shift[j - 1];
+                    // the starting index of the target string is pushed forward
+                    i = i + delta;
+                    // the starting index of the source string is pushed backward
+                    j = j - delta; // = (i+j) - (i+delta) = j - delta;
                 }
+                isMatched = false;
+                break;
             }
             if (isMatched) return i;
         }
