@@ -20,9 +20,10 @@ public class lc687 {
         }
         int lv = longestPath(root.left, val);
         int rv = longestPath(root.right, val);
-        int v = Math.max(lv, rv);
-        if (v == -1) return 0;
-        return v + 1;
+        int v = 0;
+        if (lv >= 0) v += lv + 1;
+        if (rv >= 0) v += rv + 1;
+        return v;
     }
 
     public int longestUnivaluePath(TreeNode root) {
