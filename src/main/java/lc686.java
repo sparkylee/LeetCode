@@ -46,7 +46,7 @@ public class lc686 {
                         next_i = i + 1;
                         next_j = 0;
                     } else {
-                        int delta = shift[j - 1] == -1 ? j : shift[j];
+                        int delta = shift[j - 1] == -1 ? j : shift[j - 1];
                         next_i = i + delta;
                         next_j = j - delta;
                     }
