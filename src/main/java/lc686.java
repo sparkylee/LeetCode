@@ -70,6 +70,7 @@ public class lc686 {
         do {
             sb.append(A);
             k++;
+            if (sb.length() < B.length()) continue;
             if (matchSubstring(B, sb.toString()) >= 0)
                 return k;
         } while (sb.length() <= B.length() + 2 * (A.length() - 1));
