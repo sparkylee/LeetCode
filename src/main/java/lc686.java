@@ -5,9 +5,17 @@ import java.util.List;
 
 public class lc686 {
     @Test
+    public void test() {
+//        int count = repeatedStringMatch("abcd", "cdabcdab");
+        int count = repeatedStringMatch("a", "aa");
+        System.out.println(count);
+    }
+
+    @Test
     public void t1() {
         int[] result = shiftIndex("abcax");
         int i = matchSubstring("axa", "abaxcaxadt");
+        i = matchSubstring("aa", "aa");
         System.out.println(i);
         System.out.println("dfafsd");
     }
@@ -57,7 +65,14 @@ public class lc686 {
     }
 
     public int repeatedStringMatch(String A, String B) {
-
-        return 0;
+        StringBuilder sb = new StringBuilder("");
+        int k = 0;
+        do {
+            sb.append(A);
+            k++;
+            if (matchSubstring(B, sb.toString()) >= 0)
+                return k;
+        } while (sb.length() <= B.length() + 2 * (A.length() - 1));
+        return -1;
     }
 }
