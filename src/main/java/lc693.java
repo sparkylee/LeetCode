@@ -18,7 +18,7 @@ public class lc693 {
     public boolean hasAlternatingBits(int n) {
         int bit = 0;
         boolean startChecking = false;
-        for (int i = 31; i >= 0; i++) {
+        for (int i = 31; i >= 0; i--) {
             int bitNew = (n >> i) & 0x1;
             if (bitNew == 1 && startChecking == false) {
                 startChecking = true;
