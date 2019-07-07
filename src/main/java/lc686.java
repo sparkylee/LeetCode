@@ -38,8 +38,6 @@ public class lc686 {
         int next_j = 0;
         while (i + s.length() <= t.length()) {
             isMatched = true;
-            i = next_i;
-            j = next_j;
             for (; j < s.length(); j++) {
                 if (s.charAt(j) != t.charAt(i + j)) {
                     if (j <= 2) {
@@ -54,8 +52,9 @@ public class lc686 {
                     break;
                 }
             }
-            if (isMatched)
-                return i;
+            if (isMatched) return i;
+            i = next_i;
+            j = next_j;
         }
         return -1;
     }
