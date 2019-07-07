@@ -19,12 +19,9 @@ public class lc686 {
         for (int i = 1; i < s.length(); i++) {
             int j = 0;
             while ((j + i) < s.length()) {
-                if (s.charAt(i + j) == s.charAt(j)) {
-                    if (shift[i + j] == -1)
-                        shift[i + j] = i;
-                    j++;
-                } else
-                    break;
+                if (s.charAt(i + j) != s.charAt(j)) break;
+                if (shift[i + j] == -1) shift[i + j] = i;
+                j++;
             }
         }
         return shift;
@@ -32,29 +29,27 @@ public class lc686 {
 
     private int matchSubstring(String s, String t) {
         int[] shift = shiftIndex(s);
-        int i = 0, j = 0;
+        int i = 0; // the Starting index of the target string
+        int j = 0; // the index of the source string
         boolean isMatched = true;
-        int next_i = 0;
-        int next_j = 0;
         while (i + s.length() <= t.length()) {
             isMatched = true;
             for (; j < s.length(); j++) {
+                //  i+j is the index of the target string
                 if (s.charAt(j) != t.charAt(i + j)) {
-                    if (j <= 2) {
-                        next_i = i + 1;
-                        next_j = 0;
+                    if (j <= 1) { // only match zero or one character
+                        i = i + 1;
+                        j = 0;
                     } else {
                         int delta = shift[j - 1] == -1 ? j : shift[j - 1];
-                        next_i = i + delta;
-                        next_j = j - delta;
+                        i = i + delta;
+                        j = j - delta; // = (i+j) - (i+delta) = j - delta;
                     }
                     isMatched = false;
                     break;
                 }
             }
             if (isMatched) return i;
-            i = next_i;
-            j = next_j;
         }
         return -1;
     }
