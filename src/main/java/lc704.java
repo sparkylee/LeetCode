@@ -1,7 +1,7 @@
 public class lc704 {
 
     private int search(int[] nums, int start, int end, int target) {
-        if (start < 0 || start >= end || end >= nums.length) return -1;
+        if (start < 0 || start > end || end >= nums.length) return -1;
         int middle = (start + end) / 2;
         if (nums[middle] == target)
             return middle;
