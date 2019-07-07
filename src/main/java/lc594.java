@@ -17,7 +17,8 @@ public class lc594 {
             int count = 0;
             while (j < nums.length && nums[j] - nums[i] <= 1)
                 j++;
-            countMax = Math.max(j - i, countMax);
+            if (j - 1 >= 0 && nums[j - 1] == nums[i] + 1)
+                countMax = Math.max(j - i, countMax);
             i++;
             while (i < nums.length && nums[i] == nums[i - 1])
                 i++;
