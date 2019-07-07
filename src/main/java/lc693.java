@@ -20,12 +20,13 @@ public class lc693 {
         boolean startChecking = false;
         for (int i = 31; i >= 0; i--) {
             int bitNew = (n >> i) & 0x1;
-            if (bitNew == 1 && startChecking == false) {
-                startChecking = true;
-                bit = 1;
-                continue;
+            if (startChecking == false) {
+                if (bitNew == 1)
+                    startChecking = true;
+            } else {
+                if (bit == bitNew)
+                    return false;
             }
-            if (bit == bitNew) return false;
             bit = bitNew;
         }
         return true;
