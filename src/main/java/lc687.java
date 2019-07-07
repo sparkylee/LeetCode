@@ -27,9 +27,7 @@ public class lc687 {
 
     public int longestUnivaluePath(TreeNode root) {
         if (root == null) return 0;
-        int lv = longestPath(root, root.val);
-        int rv = longestPath(root, root.val);
-        int v = lv + rv;
+        int v = longestPath(root, root.val);
         this.count = Math.max(v, this.count);
         return this.count;
     }
