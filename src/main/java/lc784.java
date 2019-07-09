@@ -12,7 +12,12 @@ public class lc784 {
     private String permute(String s, int i) {
         char x = s.charAt(i);
         x = toggle(x);
-        return s.substring(0, i) + x + s.substring(i + 1, s.length() - 1);
+
+        String snew = s.substring(0, i) + x;
+        if (i + 1 < s.length())
+            snew += s.substring(i + 1, s.length() - 1);
+        return snew;
+
     }
 
     public List<String> letterCasePermutation(String S) {
