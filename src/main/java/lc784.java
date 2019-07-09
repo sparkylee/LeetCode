@@ -15,7 +15,7 @@ public class lc784 {
 
         String snew = s.substring(0, i) + x;
         if (i + 1 < s.length())
-            snew += s.substring(i + 1, s.length() - 1);
+            snew += s.substring(i + 1);
         return snew;
 
     }
