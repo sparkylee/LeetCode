@@ -1,12 +1,21 @@
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class lc784 {
+    @Test
+    public void test() {
+        List<String> result = letterCasePermutation("C");
+        for (String s : result) {
+            System.out.println(s);
+        }
+    }
 
     private char toggle(char x) {
-        if (x >= 'A' && x <= 'Z') x = (char) (x - 'A' + 'a');
-        if (x >= 'a' && x <= 'z') x = (char) (x - 'a' + 'A');
-        return x;
+        if (x >= 'A' && x <= 'Z') return (char) (x - 'A' + 'a');
+        if (x >= 'a' && x <= 'z') return (char) (x - 'a' + 'A');
+        return 0;
     }
 
     private String permute(String s, int i) {
