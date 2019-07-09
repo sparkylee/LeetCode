@@ -8,7 +8,7 @@ public class lc766 {
             i++;
             j++;
         }
-        return false;
+        return true;
     }
 
 }
