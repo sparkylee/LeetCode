@@ -14,7 +14,7 @@ public class lc724 {
         int rs = sum - nums[0];
         if (ls == rs) return 0;
         for (int i = 1; i < nums.length; i++) {
-            ls += nums[i];
+            ls += nums[i - 1];
             rs -= sum - nums[i];
             if (ls == rs) return i;
         }
