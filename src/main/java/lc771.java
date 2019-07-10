@@ -17,6 +17,7 @@ public class lc771 {
             if (jewels[c2i(c)]) {
                 count++;
             }
+
         }
         return count;
     }
