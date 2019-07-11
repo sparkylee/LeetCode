@@ -14,7 +14,7 @@ public class lc824 {
         String[] splited = S.trim().split("\\s+");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < splited.length; i++) {
-            char c = splited[i].charAt(i);
+            char c = splited[i].charAt(0);
             if (isVowel(c)) {
                 sb.append(splited[i]);
             } else {
