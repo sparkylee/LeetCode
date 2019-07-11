@@ -22,6 +22,8 @@ public class lc824 {
                 sb.append(c);
             }
             sb.append("ma");
+            for (int j = 0; j <= i; j++)
+                sb.append('a');
             if (i < splited.length - 1)
                 sb.append(" ");
         }
