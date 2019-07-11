@@ -18,6 +18,8 @@ public class lc917 {
                 char cj = sb.charAt(j);
                 sb.setCharAt(i, cj);
                 sb.setCharAt(j, ci);
+                i++;
+                j--;
             } else
                 break;
         }
