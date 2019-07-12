@@ -1,3 +1,5 @@
+import org.junit.Test;
+
 import java.util.BitSet;
 
 public class lc748 {
@@ -25,6 +27,11 @@ public class lc748 {
         return null;
     }
 
+    @Test
+    public void test() {
+        shortestCompletingWord("1s3 PSt", new String[]{"step", "steps"});
+    }
+
     public String shortestCompletingWord(String licensePlate, String[] words) {
         StringBuilder sb = new StringBuilder();
         BitSet bs = new BitSet();
@@ -49,6 +56,7 @@ public class lc748 {
                 for (int l = 0; l < sb.length(); l++) {
                     if (sb.charAt(l) == c && bitSet.get(l)) {
                         bitSet.clear(l);
+                        break;
                     }
                 }
             }
