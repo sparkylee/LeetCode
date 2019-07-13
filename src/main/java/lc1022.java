@@ -13,13 +13,14 @@ public class lc1022 {
         return new TreeNode(x);
     }
 
-    private int sumRootToLeaf(TreeNode root, int sum) {
-        if (root == null) return sum;
+    private Integer sumRootToLeaf(TreeNode root, int sum) {
+        if (root == null) return null;
         sum <<= 1;
         sum += root.val;
-        int sumLeft = sumRootToLeaf(root.left, sum);
-        int sumRight = sumRootToLeaf(root.right, sum);
-        return sumLeft + sumRight;
+        Integer sumLeft = sumRootToLeaf(root.left, sum);
+        Integer sumRight = sumRootToLeaf(root.right, sum);
+        if (sumLeft == null && sumRight == null) return sum;
+        return (sumLeft == null ? 0 : sumLeft) + (sumRight == null ? 0 : sumRight);
     }
 
     public int sumRootToLeaf(TreeNode root) {
