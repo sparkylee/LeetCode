@@ -23,6 +23,6 @@ public class lc1022 {
     }
 
     public int sumRootToLeaf(TreeNode root) {
-        return 0;
+        return sumRootToLeaf(root, 0);
     }
 }
