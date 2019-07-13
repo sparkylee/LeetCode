@@ -18,7 +18,7 @@ public class lc1030 {
                 results.get(dis).add(new int[]{i, j});
             }
         }
-        int[][] ret = new int[disMax + 1][];
+        int[][] ret = new int[R * C][];
         int m = 0;
         for (int k = 0; k <= disMax; k++) {
             List<int[]> list = results.get(k);
