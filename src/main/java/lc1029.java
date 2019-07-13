@@ -31,7 +31,7 @@ public class lc1029 {
         int[] counts = {0, 0};
         int N = costs.length / 2;
         int costAll = 0;
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < costs.length; i++) {
             if (counts[0] >= N) {
                 counts[1]++;
                 costAll += costs[i][1];
