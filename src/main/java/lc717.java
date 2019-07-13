@@ -4,7 +4,7 @@ public class lc717 {
     public boolean isOneBitCharacter(int[] bits) {
         int len = bits.length;
         if (bits[len - 1] != 0) return false;
-
+        if (len == 1) return true;
         if (len >= 2 && bits[len - 2] == 0) return true;
 
         // there exists single 1
