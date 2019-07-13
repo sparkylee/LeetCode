@@ -29,7 +29,7 @@ public class lc1029 {
     public int twoCitySchedCost(int[][] costs) {
         Arrays.sort(costs, FruitNameComparator);
         int[] counts = {0, 0};
-        int N = costs.length;
+        int N = costs.length / 2;
         int costAll = 0;
         for (int i = 0; i < N; i++) {
             if (counts[0] >= N) {
