@@ -1,12 +1,6 @@
 import java.util.*;
 
 public class lc812 {
-    double[][] sides;
-
-    private double calcTriangleArea() {
-
-        return 0.0;
-    }
 
     private double calcDistance(int[][] points, int i, int j) {
         double dis = 0.0;
@@ -16,7 +10,7 @@ public class lc812 {
     }
 
     public double largestTriangleArea(int[][] points) {
-        sides = new double[points.length][points.length];
+        double[][] sides = new double[points.length][points.length];
         for (int i = 0; i < points.length; i++) {
             for (int j = i + 1; j < points.length; j++) {
                 double dis = calcDistance(points, i, j);
