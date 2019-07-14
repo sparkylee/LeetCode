@@ -24,6 +24,19 @@ public class lc812 {
                 sides[j][i] = dis;
             }
         }
-        return 0.0;
+        double areaMax = 0.0;
+        for (int i = 0; i < points.length; i++) {
+            for (int j = i + 1; j < points.length; j++) {
+                for (int k = j + 1; k < points.length; k++) {
+                    double a = sides[i][j];
+                    double b = sides[j][k];
+                    double c = sides[i][k];
+                    double p = (a + b + c) / 2.0;
+                    double area2 = (p - a) * (p - b) * (p - c);
+                    areaMax = Math.max(area2, areaMax);
+                }
+            }
+        }
+        return areaMax;
     }
 }
