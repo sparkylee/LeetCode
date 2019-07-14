@@ -1,6 +1,13 @@
+import org.junit.Test;
+
 import java.util.*;
 
 public class lc812 {
+    @Test
+    public void test() {
+        int[][] points = {{0, 0}, {0, 1}, {1, 0}, {0, 2}, {2, 0}};
+        System.out.println(largestTriangleArea(points));
+    }
 
     private double calcDistance(int[][] points, int i, int j) {
         double dis = 0.0;
@@ -26,11 +33,11 @@ public class lc812 {
                     double b = sides[j][k];
                     double c = sides[i][k];
                     double p = (a + b + c) / 2.0;
-                    double area2 = (p - a) * (p - b) * (p - c);
+                    double area2 = p * (p - a) * (p - b) * (p - c);
                     areaMax = Math.max(area2, areaMax);
                 }
             }
         }
-        return areaMax;
+        return Math.sqrt(areaMax);
     }
 }
