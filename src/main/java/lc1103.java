@@ -34,8 +34,10 @@ public class lc1103 {
         int i = 1;
         while (true) {
             int assign = i + bottom;
-            if (candies >= assign)
+            if (candies >= assign) {
                 results[i - 1] += assign;
+                candies -= assign;
+            }
             else {
                 results[i - 1] += candies;
                 break;
