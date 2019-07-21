@@ -20,7 +20,7 @@ public class lc941 {
             if (A[i] <= A[i - 1]) return false;
         }
         for (int i = mi; i < A.length - 1; i++) {
-            if (A[i] >= A[i + 1]) return false;
+            if (A[i] <= A[i + 1]) return false;
         }
         return true;
     }
