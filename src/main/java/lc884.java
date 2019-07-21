@@ -5,8 +5,6 @@ import java.util.Set;
 
 public class lc884 {
     public String[] uncommonFromSentences(String A, String B) {
-        if (A == null || B == null || A.length() == 0 || B.length() == 0)
-            return new String[]{};
         String[] As = A.trim().split("\\s+");
         String[] Bs = B.trim().split("\\s+");
         Set<String> Aset = new HashSet<>();
