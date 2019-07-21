@@ -1,25 +1,37 @@
+import org.junit.Test;
+
 import java.util.*;
 
 public class lc754 {
+    @Test
+    public void test() {
+        int result = reachNumber(2);
+    }
+
     public int reachNumber(int target) {
-        Map<Integer, Integer> map = new HashMap<>();
-        map.put(0, 0);
-        int k = 1;
+        Set<Integer> set = new HashSet<>();
+        set.add(0);
+        Set<Integer> pre = new HashSet<>(set);
+        int k = 0;
+        if (target == 0) return 0;
         while (true) {
-            if (map.containsKey(target)) return map.get(target);
-            Map<Integer, Integer> mapNew = new HashMap<>();
-            for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-                int tl = entry.getKey() - k;
-                int tr = entry.getKey() + k;
-                mapNew.putIfAbsent(tl, k);
-                mapNew.putIfAbsent(tr, k);
-            }
-            Iterator it = mapNew.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<Integer, Integer> pair = (Map.Entry) it.next();
-                map.putIfAbsent(pair.getKey(), pair.getValue());
-            }
             k++;
+            Set<Integer> setNew = new HashSet<>();
+            for (Integer x : pre) {
+                int tl = x - k;
+                int tr = x + k;
+                if (tl == target || tr == target)
+                    return k;
+                if (!set.contains(tl)) {
+                    set.add(tl);
+                    setNew.add(tl);
+                }
+                if (!set.contains(tr)) {
+                    set.add(tr);
+                    setNew.add(tr);
+                }
+            }
+            pre = setNew;
         }
     }
 }
