@@ -28,7 +28,7 @@ public class lc665 {
                     return false;
                 for (int k = 0; k <= 1; k++)
                     if ((i - 1 < 0 || nums[i - 1] <= nums[i + k]) &&
-                            (i + 2 < nums.length || nums[i + 2] >= nums[i + k]))
+                            (i + 2 >= nums.length || nums[i + 2] >= nums[i + k]))
                         return true;
                 return false;
             }
