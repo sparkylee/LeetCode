@@ -1,29 +1,25 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class lc884 {
     public String[] uncommonFromSentences(String A, String B) {
         String[] As = A.trim().split("\\s+");
         String[] Bs = B.trim().split("\\s+");
-        Set<String> Aset = new HashSet<>();
-        Set<String> Bset = new HashSet<>();
+        Map<String, Integer> map = new HashMap<>();
         for (String s : As) {
-            Aset.add(s);
+            map.computeIfPresent(s, (k, v) -> v = v + 1);
+            map.putIfAbsent(s, 1);
         }
         for (String s : Bs) {
-            Bset.add(s);
+            map.computeIfPresent(s, (k, v) -> v = v + 1);
+            map.putIfAbsent(s, 1);
         }
+
         List<String> results = new ArrayList<>();
-        for (String s : Aset) {
-            if (!Bset.contains(s)) {
-                results.add(s);
-            }
-        }
-        for (String s : Bset) {
-            if (!Aset.contains(s)) {
-                results.add(s);
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>) it.next();
+            if (pair.getValue() == 1) {
+                results.add(pair.getKey());
             }
         }
         return results.toArray(new String[results.size()]);
