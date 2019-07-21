@@ -16,9 +16,9 @@ public class lc1122 {
         for (int x : arr2) map.put(x, 0);
         int i = 0, j = arr1.length - 1;
         while (true) {
-            while (i < arr1.length && !map.containsKey(arr1[i]))
+            while (i < arr1.length && map.containsKey(arr1[i]))
                 i++;
-            while (j >= 0 && map.containsKey(arr1[j]))
+            while (j >= 0 && !map.containsKey(arr1[j]))
                 j--;
             if (i < j)
                 swap(arr1, i, j);
