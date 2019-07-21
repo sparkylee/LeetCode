@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class lc1103 {
     @Test
     public void test() {
-        int[] results = distributeCandies(7, 4);
+        int[] results = distributeCandies(10, 3);
         System.out.println(Arrays.toString(results));
     }
 
@@ -27,7 +27,7 @@ public class lc1103 {
         if (k >= 0) {
             int base = k * (k + 1) * n / 2;
             for (int i = 1; i <= n; i++)
-                results[i] = i * k + base;
+                results[i - 1] = i * k + base;
         }
         candies = candies - base_sum;
         int bottom = (k + 1) * n;
