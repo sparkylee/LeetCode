@@ -6,11 +6,13 @@ public class lc754 {
     @Test
     public void test() {
         int result = reachNumber(2);
+        System.out.println(result);
     }
 
     public int reachNumber(int target) {
 
         Set<Integer> pre = new HashSet<>();
+        pre.add(0);
         int k = 0;
         if (target == 0) return 0;
         while (true) {
