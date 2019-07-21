@@ -9,9 +9,8 @@ public class lc754 {
     }
 
     public int reachNumber(int target) {
-        Set<Integer> set = new HashSet<>();
-        set.add(0);
-        Set<Integer> pre = new HashSet<>(set);
+
+        Set<Integer> pre = new HashSet<>();
         int k = 0;
         if (target == 0) return 0;
         while (true) {
@@ -22,14 +21,8 @@ public class lc754 {
                 int tr = x + k;
                 if (tl == target || tr == target)
                     return k;
-                if (!set.contains(tl)) {
-                    set.add(tl);
-                    setNew.add(tl);
-                }
-                if (!set.contains(tr)) {
-                    set.add(tr);
-                    setNew.add(tr);
-                }
+                setNew.add(tl);
+                setNew.add(tr);
             }
             pre = setNew;
         }
