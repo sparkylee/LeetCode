@@ -1,9 +1,22 @@
+import org.junit.Test;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class lc1122 {
+
+    @Test
+    public void test() {
+        int[] results = relativeSortArray(
+                new int[]{2, 3, 1, 3, 2, 4, 6, 7, 9, 2, 19},
+                new int[]{2, 1, 4, 3, 9, 6}
+        );
+        System.out.println(Arrays.toString(results));
+    }
 
     private void swap(int[] arr, int i, int j) {
         int tmp = arr[i];
@@ -26,7 +39,7 @@ public class lc1122 {
                 break;
         }
         for (int k = 0; k < i; k++)
-            map.computeIfPresent(arr1[k], (x, v) -> v++);
+            map.computeIfPresent(arr1[k], (x, v) -> v = v + 1);
         int y = 0;
         for (int k = 0; k < arr2.length; k++) {
             int count = map.get(arr2[k]);
@@ -35,6 +48,7 @@ public class lc1122 {
                 y++;
             }
         }
+        Arrays.sort(arr1, i, arr1.length);
         return arr1;
 
     }
