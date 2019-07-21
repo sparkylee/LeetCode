@@ -27,7 +27,7 @@ public class lc1103 {
         if (k >= 0) {
             int base = k * (k + 1) * n / 2;
             for (int i = 1; i <= n; i++)
-                results[i - 1] = i * k + base;
+                results[i - 1] = i * (k + 1) + base;
         }
         candies = candies - base_sum;
         int bottom = (k + 1) * n;
