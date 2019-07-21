@@ -1,4 +1,14 @@
+import org.junit.Test;
+
+import java.util.Arrays;
+
 public class lc1103 {
+    @Test
+    public void test() {
+        int[] results = distributeCandies(7, 4);
+        System.out.println(Arrays.toString(results));
+    }
+
     public int[] distributeCandies(int candies, int num_people) {
         int[] results = new int[num_people];
         int n = num_people;
