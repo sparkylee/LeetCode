@@ -7,13 +7,17 @@ public class lc754 {
         int k = 1;
         while (true) {
             if (map.containsKey(target)) return map.get(target);
-            Iterator it = map.entrySet().iterator();
+            Map<Integer, Integer> mapNew = new HashMap<>();
+            for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+                int tl = entry.getKey() - k;
+                int tr = entry.getKey() + k;
+                mapNew.putIfAbsent(tl, k);
+                mapNew.putIfAbsent(tr, k);
+            }
+            Iterator it = mapNew.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<Integer, Integer> pair = (Map.Entry) it.next();
-                int tl = pair.getKey() - k;
-                int tr = pair.getKey() + k;
-                map.putIfAbsent(tl, k);
-                map.putIfAbsent(tr, k);
+                map.putIfAbsent(pair.getKey(), pair.getValue());
             }
             k++;
         }
