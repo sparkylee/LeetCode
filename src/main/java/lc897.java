@@ -35,6 +35,8 @@ public class lc897 {
         } else {
             newLinkNode = new LinkNode(root, root);
         }
+        root.left = null;
+        root.right = null;
         if (r != null) {
             newLinkNode.tail.right = r.head;
             newLinkNode.tail = r.tail;
