@@ -1,4 +1,14 @@
+import org.junit.Test;
+
 public class lc840 {
+    @Test
+    public void test() {
+        int[][] grid = {{4, 3, 8, 4},
+                {9, 5, 1, 9},
+                {2, 7, 6, 2}};
+        System.out.println(numMagicSquaresInside(grid));
+    }
+
     private boolean isMagicSqare(int[][] grid, int row, int col) {
         boolean[] checked = new boolean[9];
         if (row < 0 || row >= grid.length - 2 || col < 0 || col >= grid[0].length - 2)
