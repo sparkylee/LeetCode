@@ -36,7 +36,7 @@ public class lc840 {
         if (y1 != 15) return false;
         y1 = 0;
         for (int i = 0; i < 3; i++)
-            y1 += grid[row + i][col + 3 - i];
+            y1 += grid[row + i][col + 2 - i];
         if (y1 != 15) return false;
         return true;
     }
