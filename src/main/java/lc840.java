@@ -7,9 +7,9 @@ public class lc840 {
             int sum = 0;
             for (int j = col; j < col + 3; j++) {
                 int x = grid[i][j];
-                if (x < 1 || x > 9 || checked[x])
+                if (x < 1 || x > 9 || checked[x - 1])
                     return false;
-                checked[x] = true;
+                checked[x - 1] = true;
                 sum += x;
             }
             if (sum != 15) return false;
