@@ -26,7 +26,6 @@ public class lc953 {
                     return false;
                 v = v1;
             }
-            i++;
         }
         return true;
     }
