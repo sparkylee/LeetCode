@@ -1,6 +1,12 @@
 import org.junit.Test;
 
 public class lc953 {
+    @Test
+    public void test() {
+        String[] words = {"hello", "leetcode"};
+        String order = "hlabcdefgijkmnopqrstuvwxyz";
+        System.out.println(isAlienSorted(words, order));
+    }
     int[] c2v = new int[26];
 
     private int getValue(String word, int k) {
