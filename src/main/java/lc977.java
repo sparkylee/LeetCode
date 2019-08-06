@@ -4,6 +4,7 @@ public class lc977 {
     public int[] sortedSquares(int[] A) {
         int n = -1, p = A.length;
         for (int i = 0; i < A.length; i++) {
+            n = i;
             if (A[i] >= 0) {
                 n = i - 1;
                 p = i;
