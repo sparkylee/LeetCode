@@ -8,7 +8,7 @@ public class lc892 {
     }
 
     private int countSurfaceSide(int[][] grid, int i, int j, int x, int y) {
-        int delta = grid[i][j] - grid[x][y];
+        int delta = getHeight(grid, i, j) - getHeight(grid, x, y);
         return delta >= 0 ? delta : 0;
     }
 
