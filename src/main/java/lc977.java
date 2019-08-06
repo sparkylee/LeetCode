@@ -20,13 +20,13 @@ public class lc977 {
             if (n >= 0) n2 = A[n];
             if (p < A.length) p2 = A[p];
             if (n2 < 0 && p2 < 0) break;
-            if (p2 < 0 || p2 >= n2) {
+            if (p2 < 0 || (p2 >= n2 && n2 >= 0)) {
                 B[k] = A[n];
                 k++;
                 n--;
                 continue;
             }
-            if (n2 < 0 || n2 >= p2) {
+            if (n2 < 0 || (n2 >= p2 && p2 >= 0)) {
                 B[k] = A[p];
                 k++;
                 p++;
