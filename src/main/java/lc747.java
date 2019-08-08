@@ -1,4 +1,11 @@
+import org.junit.Test;
+
 public class lc747 {
+    @Test
+    public void test() {
+        System.out.println(dominantIndex(new int[]{0, 0, 0, 1}));
+    }
+
     public int dominantIndex(int[] nums) {
         int xi = -1, x = 0;
         for (int i = 0; i < nums.length; i++) {
@@ -9,7 +16,7 @@ public class lc747 {
         }
         int yi = -1, y = 0;
         for (int i = 0; i < nums.length; i++) {
-            if (yi != xi && (yi == -1 || nums[i] >= y)) {
+            if (i != xi && (yi == -1 || nums[i] >= y)) {
                 y = nums[i];
                 yi = i;
             }
