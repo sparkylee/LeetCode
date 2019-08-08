@@ -1,6 +1,15 @@
+import org.junit.Test;
+
 import java.util.*;
 
 public class lc819 {
+    @Test
+    public void test() {
+        String paragraph = "Bob hit a ball, the hit BALL flew far after it was hit.";
+        String[] banned = {"hit"};
+        mostCommonWord(paragraph, banned);
+    }
+
     boolean isLetter(char c) {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
     }
