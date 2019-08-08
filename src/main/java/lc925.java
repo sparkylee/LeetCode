@@ -26,7 +26,7 @@ public class lc925 {
         int i = 0, j = 0;
         while (true) {
             CharBlock ncb = getCharBlock(name, i);
-            CharBlock tcb = getCharBlock(name, j);
+            CharBlock tcb = getCharBlock(typed, j);
             if (ncb == null && tcb == null)
                 return true;
             if (ncb == null || tcb == null ||
