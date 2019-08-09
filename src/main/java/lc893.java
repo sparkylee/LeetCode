@@ -20,8 +20,10 @@ public class lc893 {
         }
     }
 
+    StringBuilder sb = new StringBuilder();
     private String calcSESignature(String str) {
-        StringBuilder sb = new StringBuilder();
+        sb.setLength(0);
+        sb.trimToSize();
         reset();
         for (int i = 0; i < str.length(); i += 2) {
             char c = str.charAt(i);
