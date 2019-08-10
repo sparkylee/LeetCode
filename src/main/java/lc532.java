@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class lc532 {
     private int nextNum(int nums[], int i) {
-        while (i + 1 < nums.length || nums[i + 1] == nums[i])
+        while (i + 1 < nums.length && nums[i + 1] == nums[i])
             i++;
         return i + 1;
     }
