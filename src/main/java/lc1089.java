@@ -2,6 +2,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class lc1089 {
+    private void shiftValue(int[] arr, int i, int shift) {
+        int j = i + shift;
+        if (j >= 0 && j < arr.length)
+            arr[j] = arr[i];
+    }
     public void duplicateZeros(int[] arr) {
         int shift = 0;
         int i = 0;
@@ -12,11 +17,10 @@ public class lc1089 {
                 shift++;
         }
         for (; i >= 0; i--) {
-            arr[i + shift] = arr[i];
+            shiftValue(arr, i, shift);
             if (arr[i] == 0) {
                 shift--;
-                if (i + shift >= 0)
-                    arr[i + shift] = arr[i];
+                shiftValue(arr, i, shift);
             }
         }
 
