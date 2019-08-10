@@ -11,7 +11,7 @@ public class lc532 {
 
     public int findPairs(int[] nums, int k) {
         Arrays.sort(nums);
-        int i = 0, j = 0;
+        int i = 0, j = 1;
         int count = 0;
         while (i < nums.length && j < nums.length) {
             int diff = nums[j] - nums[i];
@@ -24,6 +24,7 @@ public class lc532 {
             } else {
                 j = nextNum(nums, j);
             }
+            if (i == j) j++;
         }
         return count;
     }
