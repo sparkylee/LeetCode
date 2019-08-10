@@ -11,11 +11,11 @@ public class lc392 {
             boolean charMatched = false;
             while (j < t.length()) {
                 char d = t.charAt(j);
+                j++;
                 if (d == c) {
                     charMatched = true;
                     break;
                 }
-                j++;
             }
             if (!charMatched)
                 return false;
