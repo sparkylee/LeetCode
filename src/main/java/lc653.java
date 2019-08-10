@@ -31,7 +31,7 @@ public class lc653 {
         if (node == null) return false;
         if (findTarget(node.left, root, k)) return true;
         int second = k - node.val;
-        if (root.val >= second) return false;
+        if (node.val >= second) return false;
         if (findSecond(root, second)) return true;
         return findTarget(node.right, root, k);
     }
