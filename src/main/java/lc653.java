@@ -30,7 +30,7 @@ public class lc653 {
     private boolean findTarget(TreeNode node, TreeNode root, int k) {
         if (node == null) return false;
         if (findTarget(node.left, root, k)) return true;
-        int second = k - root.val;
+        int second = k - node.val;
         if (root.val >= second) return false;
         if (findSecond(root, second)) return true;
         return findTarget(node.right, root, k);
