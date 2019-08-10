@@ -10,6 +10,7 @@ public class lc532 {
     }
 
     public int findPairs(int[] nums, int k) {
+        if (k < 0) return 0;
         Arrays.sort(nums);
         int i = 0, j = 1;
         int count = 0;
