@@ -1,4 +1,18 @@
+import org.junit.Test;
+
 public class lc653 {
+    @Test
+    public void test() {
+        TreeNode n5 = TN(5), n3 = TN(3), n2 = TN(2),
+                n4 = TN(4), n6 = TN(6), n7 = TN(7);
+        n5.left = n3;
+        n5.right = n6;
+        n3.left = n2;
+        n3.right = n4;
+        n6.right = n7;
+        findTarget(n5, 9);
+    }
+
     public class TreeNode {
         int val;
         TreeNode left;
@@ -7,6 +21,10 @@ public class lc653 {
         TreeNode(int x) {
             val = x;
         }
+    }
+
+    private TreeNode TN(int x) {
+        return new TreeNode(x);
     }
 
     private boolean findTarget(TreeNode node, TreeNode root, int k) {
