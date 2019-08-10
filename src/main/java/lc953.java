@@ -15,24 +15,24 @@ public class lc953 {
         return c2v[word.charAt(k) - 'a'];
     }
 
+    private boolean isSorted(String word, String wordNext) {
+        int maxLen = Math.max(word.length(), wordNext.length());
+        for (int i = 0; i < maxLen; i++) {
+            int v0 = getValue(word, i);
+            int v1 = getValue(wordNext, i);
+            if (v0 == -1) return true;
+            if (v0 > v1) return false;
+        }
+        return true;
+    }
     public boolean isAlienSorted(String[] words, String order) {
-
         for (int i = 0; i < 26; i++) {
             char c = order.charAt(i);
             c2v[c - 'a'] = i;
         }
-        int maxLen = 0;
-        for (int i = 0; i < words.length; i++)
-            maxLen = Math.max(maxLen, words[i].length());
-        for (int i = 0; i < maxLen; i++) {
-            int v = getValue(words[0], i);
-            for (int j = 1; j < words.length; j++) {
-                int v1 = getValue(words[j], i);
-                if (v1 < v)
-                    return false;
-                v = v1;
-            }
-        }
+        for (int i = 0; i < words.length - 1; i++)
+            if (!isSorted(words[i], words[i + 2])) return false;
+
         return true;
     }
 }
