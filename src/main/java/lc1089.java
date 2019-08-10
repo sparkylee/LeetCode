@@ -13,8 +13,10 @@ public class lc1089 {
         }
         for (; i >= 0; i--) {
             arr[i + shift] = arr[i];
-            if (arr[i] == 0)
+            if (arr[i] == 0) {
                 shift--;
+                arr[i + shift] = arr[i];
+            }
         }
 
     }
