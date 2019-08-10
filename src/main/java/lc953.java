@@ -31,7 +31,7 @@ public class lc953 {
             c2v[c - 'a'] = i;
         }
         for (int i = 0; i < words.length - 1; i++)
-            if (!isSorted(words[i], words[i + 2])) return false;
+            if (!isSorted(words[i], words[i + 1])) return false;
 
         return true;
     }
