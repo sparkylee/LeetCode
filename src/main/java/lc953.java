@@ -20,7 +20,7 @@ public class lc953 {
         for (int i = 0; i < maxLen; i++) {
             int v0 = getValue(word, i);
             int v1 = getValue(wordNext, i);
-            if (v0 == -1) return true;
+            if (v0 < v1) return true;
             if (v0 > v1) return false;
         }
         return true;
@@ -32,7 +32,6 @@ public class lc953 {
         }
         for (int i = 0; i < words.length - 1; i++)
             if (!isSorted(words[i], words[i + 1])) return false;
-
         return true;
     }
 }
