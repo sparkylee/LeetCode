@@ -9,11 +9,15 @@ public class lc572_1 {
         }
     }
 
+    private boolean equals(TreeNode x, TreeNode y) {
+        if (x == y) return true;
+        if (x == null || y == null || x.val != y.val) return false;
+        return equals(x.left, y.left) && equals(x.right, y.right);
+    }
     public boolean isSubtree(TreeNode s, TreeNode t) {
         if (t == null) return true;
         if (s == null) return false;
-        if (s.val == t.val && isSubtree(s.left, t.left) && isSubtree(s.right, t.right))
-            return true;
+        if (equals(s, t)) return true;
         if (isSubtree(s.left, t))
             return true;
         if (isSubtree(s.right, t))
