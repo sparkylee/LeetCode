@@ -20,7 +20,7 @@ public class lc653 {
 
     private boolean findSecond(TreeNode root, int value) {
         if (root == null) return false;
-        if (root.val < value && findSecond(root.left, value)) return true;
+        if (value < root.val) return findSecond(root.left, value);
         if (root.val == value) return true;
         return findSecond(root.right, value);
     }
