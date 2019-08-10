@@ -6,7 +6,7 @@ import java.util.List;
 public class lc1089 {
     @Test
     public void test() {
-        int[] arr = {2, 0};
+        int[] arr = {1, 2, 0, 0, 3};
         duplicateZeros(arr);
     }
 
@@ -20,13 +20,10 @@ public class lc1089 {
         int shift = 0;
         int i = 0;
         for (; i < arr.length - 1; i++) {
-            if (i + shift == arr.length - 1)
-                break;
             if (arr[i] == 0)
                 shift++;
         }
-        if (i >= arr.length - 1)
-            i = arr.length - 2;
+        i = arr.length - 2;
         for (; i >= 0; i--) {
             shiftValue(arr, i, shift);
             if (arr[i] == 0) {
