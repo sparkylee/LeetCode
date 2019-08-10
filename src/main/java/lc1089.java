@@ -15,7 +15,8 @@ public class lc1089 {
             arr[i + shift] = arr[i];
             if (arr[i] == 0) {
                 shift--;
-                arr[i + shift] = arr[i];
+                if (i + shift >= 0)
+                    arr[i + shift] = arr[i];
             }
         }
 
