@@ -20,6 +20,6 @@ public class lc392 {
             if (!charMatched)
                 return false;
         }
-        return false;
+        return true;
     }
 }
