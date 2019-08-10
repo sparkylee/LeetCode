@@ -10,8 +10,8 @@ public class lc572_1 {
     }
 
     public boolean isSubtree(TreeNode s, TreeNode t) {
-        if (s == null && t == null) return true;
-        if (s == null || t == null) return false;
+        if (t == null) return true;
+        if (s == null) return false;
         if (s.val == t.val && isSubtree(s.left, t.left) && isSubtree(s.right, t.right))
             return true;
         if (isSubtree(s.left, t))
