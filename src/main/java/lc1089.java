@@ -16,6 +16,8 @@ public class lc1089 {
             if (arr[i] == 0)
                 shift++;
         }
+        if (i >= arr.length)
+            i = arr.length - 1;
         for (; i >= 0; i--) {
             shiftValue(arr, i, shift);
             if (arr[i] == 0) {
