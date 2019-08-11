@@ -1,7 +1,15 @@
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class lc994 {
+    @Test
+    public void test() {
+        int[][] grid = {{2, 1, 1}, {1, 1, 0}, {0, 1, 1}};
+        orangesRotting(grid);
+    }
+
     class Coord {
         int i, j;
 
@@ -18,7 +26,7 @@ public class lc994 {
 
     private void addAdjacentIfFresh(int[][] grid, List<Coord> rottens_new,
                                     Coord orange, int delta_i, int delta_j) {
-        if (isFresh(grid, orange.i - 1, orange.j))
+        if (isFresh(grid, orange.i + delta_i, orange.j + delta_j))
             rottens_new.add(new Coord(orange.i + delta_i, orange.j + delta_j));
     }
 
