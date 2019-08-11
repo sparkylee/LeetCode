@@ -23,7 +23,7 @@ public class lc985 {
             if (Math.abs(val_A) % 2 == 1 && Math.abs(val_N) % 2 == 1)
                 evenSum = evenSum + val_A + val_N;
             if (val_A % 2 == 0 && val_N % 2 == 0)
-                evenSum = evenSum + val_A;
+                evenSum = evenSum + val_N;
             answers[i] = evenSum;
             A[index] = val_A + val_N;
         }
