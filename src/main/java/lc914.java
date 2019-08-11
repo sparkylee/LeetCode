@@ -29,8 +29,10 @@ public class lc914 {
             i++;
         }
         int g = counts[0];
-        for (i = 0; i < counts.length; i++)
+        for (i = 0; i < counts.length; i++) {
             g = gcd(g, counts[i]);
+            if (g < 2) return false;
+        }
         return g >= 2;
     }
 }
