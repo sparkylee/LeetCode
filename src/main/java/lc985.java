@@ -1,4 +1,13 @@
+import org.junit.Test;
+
 public class lc985 {
+    @Test
+    public void test() {
+        int[] A = {1, 2, 3, 4};
+        int[][] quries = {{1, 0}, {-3, 1}, {-4, 0}, {2, 3}};
+        sumEvenAfterQueries(A, quries);
+    }
+
     public int[] sumEvenAfterQueries(int[] A, int[][] queries) {
         int[] answers = new int[queries.length];
         int evenSum = 0;
