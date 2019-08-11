@@ -15,21 +15,16 @@ public class lc914 {
     }
 
     public boolean hasGroupsSizeX(int[] deck) {
-        Map<Integer, Integer> countMap = new HashMap<>();
-        for (int c : deck) {
-            countMap.computeIfPresent(c, (k, v) -> v = v + 1);
-            countMap.putIfAbsent(c, 1);
-        }
-        int[] counts = new int[countMap.size()];
-        Iterator it = countMap.entrySet().iterator();
-        int i = 0;
-        while (it.hasNext()) {
-            Map.Entry<Integer, Integer> pair = (Map.Entry<Integer, Integer>) it.next();
-            counts[i] = pair.getValue();
-            i++;
-        }
-        int g = counts[0];
-        for (i = 0; i < counts.length; i++) {
+        int[] counts = new int[10000];
+        for (int i = 0; i < 10000; i++)
+            counts[i] = 0;
+        for (int c : deck)
+            counts[c]++;
+        int k = 0;
+        while (counts[k] == 0) k++;
+        int g = counts[k];
+        for (int i = k; i < counts.length; i++) {
+            if (counts[i] == 0) continue;
             g = gcd(g, counts[i]);
             if (g < 2) return false;
         }
