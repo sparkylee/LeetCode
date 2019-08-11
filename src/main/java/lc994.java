@@ -26,8 +26,12 @@ public class lc994 {
 
     private void addAdjacentIfFresh(int[][] grid, List<Coord> rottens_new,
                                     Coord orange, int delta_i, int delta_j) {
-        if (isFresh(grid, orange.i + delta_i, orange.j + delta_j))
-            rottens_new.add(new Coord(orange.i + delta_i, orange.j + delta_j));
+        int ii = orange.i + delta_i, jj = orange.j + delta_j;
+        if (isFresh(grid, ii, jj)) {
+            grid[ii][jj] = 1;
+            rottens_new.add(new Coord(ii, jj));
+        }
+
     }
 
     public int orangesRotting(int[][] grid) {
@@ -46,8 +50,8 @@ public class lc994 {
                 addAdjacentIfFresh(grid, rottens_new, orange, 0, -1);
                 addAdjacentIfFresh(grid, rottens_new, orange, 0, 1);
             }
-            count++;
             if (rottens_new.isEmpty()) break;
+            count++;
             rottens = rottens_new;
         }
         return count;
