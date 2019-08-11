@@ -28,7 +28,7 @@ public class lc994 {
                                     Coord orange, int delta_i, int delta_j) {
         int ii = orange.i + delta_i, jj = orange.j + delta_j;
         if (isFresh(grid, ii, jj)) {
-            grid[ii][jj] = 1;
+            grid[ii][jj] = 2; // mark as rotten
             rottens_new.add(new Coord(ii, jj));
         }
 
