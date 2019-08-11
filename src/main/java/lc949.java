@@ -15,6 +15,7 @@ public class lc949 {
                 B[j] = true;
                 for (int k = 3; k >= 0; k--) { // select hh:Xm
                     if (B[k] || A[k] >= 6) continue;
+                    B[k] = true;
                     for (int l = 3; l >= 0; l--) { // select hh:mX
                         if (!B[l])
                             return "" + A[i] + A[j] + ':' + A[k] + A[l];
