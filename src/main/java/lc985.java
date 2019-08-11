@@ -18,9 +18,9 @@ public class lc985 {
             int index = queries[i][1];
             int val_N = queries[i][0];
             int val_A = A[index];
-            if (val_A % 2 == 0 && val_N % 2 == 1)
+            if (val_A % 2 == 0 && Math.abs(val_N) % 2 == 1)
                 evenSum = evenSum - val_A;
-            if (val_A % 2 == 1 && val_N % 2 == 1)
+            if (Math.abs(val_A) % 2 == 1 && Math.abs(val_N) % 2 == 1)
                 evenSum = evenSum + val_A + val_N;
             if (val_A % 2 == 0 && val_N % 2 == 0)
                 evenSum = evenSum + val_A;
