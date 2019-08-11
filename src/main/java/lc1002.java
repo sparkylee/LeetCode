@@ -1,16 +1,32 @@
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class lc1002 {
+    @Test
+    public void test() {
+        String[] A = {"bella", "label", "roller"};
+        commonChars(A);
+    }
+
     private void reset(int[] cs) {
+        preset(cs, 0);
+    }
+
+    private void init(int[] cs) {
+        preset(cs, -1);
+    }
+
+    private void preset(int[] cs, int value) {
         for (int j = 0; j < 26; j++) {
-            cs[j] = 0;
+            cs[j] = value;
         }
     }
 
     private void adjust(int[] src, int[] dsc) {
         for (int j = 0; j < 26; j++) {
-            if (dsc[j] == 0)
+            if (dsc[j] == -1)
                 dsc[j] = src[j];
             else
                 dsc[j] = Math.min(dsc[j], src[j]);
@@ -20,15 +36,15 @@ public class lc1002 {
     private void str2cs(String str, int[] cs) {
         reset(cs);
         for (int j = 0; j < str.length(); j++) {
-            cs[str.charAt(j) - 'a'] += 1;
+            int index = str.charAt(j) - 'a';
+            cs[index] += 1;
         }
     }
 
     public List<String> commonChars(String[] A) {
         int[] cs = new int[26];
         int[] csPerWord = new int[26];
-        reset(cs);
-        reset(csPerWord);
+        init(cs);
         for (int i = 0; i < A.length; i++) {
             str2cs(A[i], csPerWord);
             adjust(csPerWord, cs);
