@@ -5,6 +5,7 @@ import java.util.List;
 public class lc989 {
     public List<Integer> addToArrayForm(int[] A, int K) {
         List<Integer> B = new ArrayList<>();
+        if (K == 0) B.add(0);
         while (K > 0) {
             int m = K % 10;
             K = K / 10;
