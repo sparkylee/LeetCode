@@ -1,8 +1,17 @@
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class lc989 {
+    @Test
+    public void test() {
+        int[] A = {9, 9, 9, 9, 9, 9, 9, 9, 9, 9};
+        int K = 1;
+        addToArrayForm(A, K);
+    }
+
     public List<Integer> addToArrayForm(int[] A, int K) {
         List<Integer> B = new ArrayList<>();
         do {
@@ -22,10 +31,8 @@ public class lc989 {
             if (i == len && sum == 0) break;
             if (i == B.size()) {
                 B.add(s);
-            }
-            else
+            } else
                 B.set(i, s);
-            i++;
         }
         Collections.reverse(B);
         return B;
