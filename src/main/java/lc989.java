@@ -20,7 +20,10 @@ public class lc989 {
             if (sum == 0) break;
             s = sum % 10;
             c = sum / 10;
-            if (i == B.size()) B.add(s);
+            if (i == B.size())
+                B.add(s);
+            else
+                B.set(i, s);
             i++;
         }
         Collections.reverse(B);
