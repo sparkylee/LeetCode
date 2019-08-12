@@ -16,8 +16,8 @@ public class lc989 {
             int j = A.length - 1 - i;
             a = (j >= 0) ? A[j] : 0;
             b = (i < B.size()) ? B.get(i) : 0;
-            if (sum == 0) break;
             sum = a + b + c;
+            if (sum == 0) break;
             s = sum % 10;
             c = sum / 10;
             if (i == B.size()) {
