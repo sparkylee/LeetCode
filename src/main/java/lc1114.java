@@ -7,34 +7,43 @@ import java.util.concurrent.locks.ReentrantLock;
 public class lc1114 {
 
     class Foo {
-        Lock semSecond;
-        Lock semThird;
 
+        private int c = 0;
         public Foo() {
-            this.semSecond = new ReentrantLock();
-            this.semThird = new ReentrantLock();
-            this.semSecond.lock();
-            this.semThird.lock();
+            c = 0;
         }
 
-        public void first(Runnable printFirst) throws InterruptedException {
+        private void wait(int x) {
+            while (!test(x)) {
+            }
+        }
 
+        private synchronized boolean test(int x) {
+            return x == this.c;
+        }
+
+        private synchronized void set(int x) {
+            this.c = x;
+        }
+        public void first(Runnable printFirst) throws InterruptedException {
+            wait(0);
             // printFirst.run() outputs "first". Do not change or remove this line.
             printFirst.run();
-            this.semSecond.unlock();
+            set(1);
         }
 
         public void second(Runnable printSecond) throws InterruptedException {
-            this.semSecond.lock();
+            wait(1);
             // printSecond.run() outputs "second". Do not change or remove this line.
             printSecond.run();
-            this.semThird.unlock();
+            set(2);
         }
 
         public void third(Runnable printThird) throws InterruptedException {
-            this.semThird.lock();
+            wait(2);
             // printThird.run() outputs "third". Do not change or remove this line.
             printThird.run();
+            set(0);
         }
     }
 }
