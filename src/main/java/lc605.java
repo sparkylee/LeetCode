@@ -14,6 +14,6 @@ public class lc605 {
             count++;
             i += 2;
         }
-        return count == n;
+        return count >= n;
     }
 }
