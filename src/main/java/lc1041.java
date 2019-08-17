@@ -40,7 +40,7 @@ public class lc1041 {
         }
         for (int i = 0; i < paths.length; i++) {
             for (int j = 0; j < 2; j++) {
-                int garden = paths[i][j];
+                int garden = paths[i][j] - 1;
                 int gardenAdjacent = paths[i][1 - j];
                 for (int k = 0; k < 4; k++) {
                     if (pathMap[garden][k] == gardenAdjacent)
