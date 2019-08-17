@@ -1,7 +1,14 @@
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class lc1041 {
+    @Test
+    public void test() {
+        gardenNoAdj(4, new int[][]{{1, 2}, {2, 3}, {3, 4}, {4, 1}, {1, 3}, {2, 4}});
+    }
+
     private boolean assignFlower(int[] answer, int garden, final int[][] pathMap) {
         if (garden >= answer.length) return true;
         for (int flower = 1; flower <= 4; flower++) {
@@ -12,8 +19,6 @@ public class lc1041 {
                 if (gardenAdjacent == -1)
                     break;
                 int flowerAdjacent = answer[gardenAdjacent];
-                if (flowerAdjacent == 0)
-                    break;
                 if (flowerAdjacent == flower) {
                     chosen = true;
                     break;
