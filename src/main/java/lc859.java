@@ -4,7 +4,7 @@ public class lc859 {
             return false;
         final int Len = A.length();
         int count = 0;
-        int[] indice = new int[2];
+        int[] indice = new int[4];
         for (int i = 0; i < Len; i++) {
             char a = A.charAt(i);
             char b = B.charAt(i);
@@ -12,6 +12,7 @@ public class lc859 {
                 indice[count] = i;
                 count++;
                 if (count > 2) return false;
+
             }
         }
         if (count != 0 && count != 2) return false;
