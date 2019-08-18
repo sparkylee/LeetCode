@@ -33,7 +33,7 @@ public class lc937 {
     }
 
     private void sort(String[] logs, int[] starts, int end) {
-        for (int i = 0; i <= end; i++) {
+        for (int i = 0; i < end; i++) {
             for (int j = i + 1; j <= end; j++) {
                 if (compare(logs, starts, i, j))
                     swap(logs, i, j);
