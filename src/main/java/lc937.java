@@ -1,4 +1,11 @@
+import org.junit.Test;
+
 public class lc937 {
+    @Test
+    public void test() {
+        String[] logs = {"a1 9 2 3 1", "g1 act car", "zo4 4 7", "ab1 off key dog", "a8 act zoo"};
+    }
+
     private int getStart(String log) {
         int i = 0;
         while (log.charAt(i) != ' ') i++;
@@ -26,8 +33,8 @@ public class lc937 {
     }
 
     private void sort(String[] logs, int[] starts, int end) {
-        for (int i = 0; i < end; i++) {
-            for (int j = i + 1; j < end; j++) {
+        for (int i = 0; i <= end; i++) {
+            for (int j = i + 1; j <= end; j++) {
                 if (compare(logs, starts, i, j))
                     swap(logs, i, j);
             }
@@ -36,9 +43,8 @@ public class lc937 {
 
     private boolean compare(String[] logs, int[] starts, int i, int j) {
         String li = logs[i];
-        int ii = starts[i];
         String lj = logs[j];
-        int jj = starts[j];
+        int ii, jj;
         int k = 0;
         while (true) {
             ii = starts[i] + k;
