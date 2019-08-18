@@ -6,7 +6,8 @@ import java.util.List;
 public class lc581 {
     @Test
     public void test() {
-        int[] nums = {2, 6, 4, 8, 10, 9, 15};
+//        int[] nums = {2, 6, 4, 8, 10, 9, 15};
+        int[] nums = {1, 2, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5};
         findUnsortedSubarray(nums);
 
     }
@@ -41,7 +42,7 @@ public class lc581 {
         if (start == end)
             return nums[start] < target ? start : -1;
         int middle = (start + end + 1) / 2;
-        if (nums[middle] > target)
+        if (nums[middle] >= target)
             return getLastSmallerIndex(nums, start, middle - 1, target);
         return getLastSmallerIndex(nums, middle, end, target);
     }
