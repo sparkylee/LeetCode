@@ -4,6 +4,7 @@ public class lc937 {
     @Test
     public void test() {
         String[] logs = {"a1 9 2 3 1", "g1 act car", "zo4 4 7", "ab1 off key dog", "a8 act zoo"};
+        reorderLogFiles(logs);
     }
 
     private int getStart(String log) {
@@ -26,17 +27,20 @@ public class lc937 {
         return i;
     }
 
-    private void swap(String[] logs, int i, int j) {
+    private void swap(String[] logs, int[] starts, int i, int j) {
         String tmp = logs[i];
         logs[i] = logs[j];
         logs[j] = tmp;
+        int x = starts[i];
+        starts[i] = starts[j];
+        starts[j] = x;
     }
 
     private void sort(String[] logs, int[] starts, int end) {
         for (int i = 0; i < end; i++) {
             for (int j = i + 1; j <= end; j++) {
                 if (compare(logs, starts, i, j))
-                    swap(logs, i, j);
+                    swap(logs, starts, i, j);
             }
         }
     }
@@ -80,7 +84,7 @@ public class lc937 {
             if (j == -1)
                 break;
             if (i != j)
-                swap(logs, i, j);
+                swap(logs, starts, i, j);
             i--;
         }
         int end = i;
