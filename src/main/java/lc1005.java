@@ -26,7 +26,7 @@ public class lc1005 {
         if (K % 2 == 0) return sum + delta;
         int mv = Math.abs(A[0]);
         for (int i = 0; i < A.length; i++) {
-            int v = Math.abs(A[0]);
+            int v = Math.abs(A[i]);
             mv = Math.min(v, mv);
         }
         return sum + delta - 2 * mv;
