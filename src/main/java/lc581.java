@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class lc581 {
+    @Test
+    public void test() {
+        int[] nums = {2, 6, 4, 8, 10, 9, 15};
+        findUnsortedSubarray(nums);
+
+    }
     private int getMin(int[] nums, int start, int end) {
         int m = nums[start];
         for (int i = start; i <= end; i++)
@@ -59,8 +65,8 @@ public class lc581 {
         if (end == 0) return 0;
         int min = getMin(nums, start, end);
         int max = getMax(nums, start, end);
-        int left = getFirstGreaterIndex(nums, start, end, min);
-        int right = getLastSmallerIndex(nums, start, end, max);
+        int left = getFirstGreaterIndex(nums, 0, start - 1, min);
+        int right = getLastSmallerIndex(nums, end + 1, nums.length - 1, max);
         start = left == -1 ? start : left;
         end = right == -1 ? end : right;
         return end - start + 1;
