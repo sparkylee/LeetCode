@@ -3,7 +3,7 @@ public class lc744 {
         if (start + 1 >= end) {
             return start;
         }
-        int middle = (start + end);
+        int middle = (start + end) / 2;
         if (letters[middle] <= target)
             return searchLoc(letters, middle, end, target);
         return searchLoc(letters, start, middle, target);
