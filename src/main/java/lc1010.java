@@ -9,7 +9,7 @@ public class lc1010 {
             counts[modulus]++;
         }
         int accu = 0;
-        for (int i = 0; i < 60; i++) {
+        for (int i = 0; i <= 30; i++) {
             int j = (60 - i) % 60;
             int c = counts[i];
             int d = counts[j];
