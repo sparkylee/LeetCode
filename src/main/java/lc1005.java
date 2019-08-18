@@ -17,7 +17,7 @@ public class lc1005 {
                 int reduction = Math.min(NC[i], K);
                 NC[i] = NC[i] - reduction;
                 K = K - reduction;
-                delta += reduction * i;
+                delta += 2 * reduction * i;
                 if (K == 0) {
                     return sum + delta;
                 }
