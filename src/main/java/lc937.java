@@ -57,9 +57,13 @@ public class lc937 {
                 break;
             if (ii == li.length() - 1) return false;
             if (jj == lj.length() - 1) return true;
-            if (li.charAt(ii) > lj.charAt(jj)) return true;
-            if (li.charAt(ii) < lj.charAt(jj)) return false;
-            k++;
+            if (li.charAt(ii) == lj.charAt(jj)) {
+                k++;
+                continue;
+            }
+            if (lj.charAt(jj) == ' ' || li.charAt(ii) > lj.charAt(jj)) return true;
+            if (li.charAt(ii) == ' ' || li.charAt(ii) < lj.charAt(jj)) return false;
+            return false;
         }
         k = 0;
         while (true) {
