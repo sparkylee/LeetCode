@@ -3,7 +3,8 @@ import org.junit.Test;
 public class lc937 {
     @Test
     public void test() {
-        String[] logs = {"a1 9 2 3 1", "g1 act car", "zo4 4 7", "ab1 off key dog", "a8 act zoo"};
+//        String[] logs = {"a1 9 2 3 1", "g1 act car", "zo4 4 7", "ab1 off key dog", "a8 act zoo"};
+        String[] logs = {"j mo", "5 m w", "g 07", "o 2 0", "t q h"};
         reorderLogFiles(logs);
     }
 
@@ -53,10 +54,10 @@ public class lc937 {
         while (true) {
             ii = starts[i] + k;
             jj = starts[j] + k;
-            if (ii == li.length() - 1 && jj == lj.length() - 1)
+            if (ii == li.length() && jj == lj.length())
                 break;
-            if (ii == li.length() - 1) return false;
-            if (jj == lj.length() - 1) return true;
+            if (ii == li.length()) return false;
+            if (jj == lj.length()) return true;
             if (li.charAt(ii) == lj.charAt(jj)) {
                 k++;
                 continue;
