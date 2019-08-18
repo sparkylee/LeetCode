@@ -29,6 +29,6 @@ public class lc1005 {
             int v = Math.abs(A[0]);
             mv = Math.min(v, mv);
         }
-        return sum + delta - mv;
+        return sum + delta - 2 * mv;
     }
 }
