@@ -11,7 +11,7 @@ public class lc1038 {
 
     private int bstToGst(TreeNode root, int sum) {
         if (root == null) return sum;
-        sum = bstToGst(root.left, sum);
+        sum = bstToGst(root.right, sum);
         root.val += sum;
         return bstToGst(root.left, root.val);
     }
