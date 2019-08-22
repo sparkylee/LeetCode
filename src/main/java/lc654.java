@@ -11,10 +11,10 @@ public class lc654 {
         }
     }
 
-    public TreeNode constructMaximumBinaryTree(int[] nums, int start, int end) {
+    private TreeNode constructMaximumBinaryTree(int[] nums, int start, int end) {
         if (start > end || start < 0 || end >= nums.length) return null;
         int m = nums[start];
-        int im = 0;
+        int im = start;
         for (int i = start; i <= end; i++) {
             if (m < nums[i]) {
                 m = nums[i];
