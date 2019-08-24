@@ -26,11 +26,12 @@ public class lc894 {
 
     public List<TreeNode> allPossibleFBT(int N) {
         List<List<TreeNode>> results = new ArrayList<>();
-        List<TreeNode> t1 = new ArrayList<>();
-        t1.add(new TreeNode(0));
+        List<TreeNode> t0 = new ArrayList<>();
+        t0.add(new TreeNode(0));
+        results.add(t0);
         for (int i = 1; i <= N / 2; i++) {
             List<TreeNode> ti = new ArrayList<>();
-            int n = i * 2 + 1;
+            int n = i * 2 + 1;// n nodes
             for (int j = 1; j < n; j += 2) {
                 int k = n - j;
                 List<TreeNode> leftList = results.get(j / 2);
