@@ -9,17 +9,25 @@ public class lc890 {
     }
 
     public List<String> findAndReplacePattern(String[] words, String pattern) {
-        int[] mapping = new int[256];
+        int[] mappP2W = new int[256];
+        int[] mappW2P = new int[256];
         List<String> results = new ArrayList<>();
         for (int i = 0; i < words.length; i++) {
-            reset(mapping);
+            reset(mappP2W);
+            reset(mappW2P);
             boolean matched = true;
             for (int j = 0; j < pattern.length(); j++) {
                 char c = pattern.charAt(j);
                 char d = words[i].charAt(j);
-                if (mapping[c] == 0)
-                    mapping[c] = d;
-                else if (mapping[c] != d) {
+                if (mappP2W[c] == 0)
+                    mappP2W[c] = d;
+                else if (mappP2W[c] != d) {
+                    matched = false;
+                    break;
+                }
+                if (mappW2P[d] == 0)
+                    mappW2P[d] = c;
+                else if (mappW2P[d] != c) {
                     matched = false;
                     break;
                 }
