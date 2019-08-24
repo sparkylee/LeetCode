@@ -32,6 +32,7 @@ public class lc894 {
         for (int i = 1; i <= N / 2; i++) {
             List<TreeNode> ti = new ArrayList<>();
             int n = i * 2 + 1;// n nodes
+            n = n - 1; // exclude the root node
             for (int j = 1; j < n; j += 2) {
                 int k = n - j;
                 List<TreeNode> leftList = results.get(j / 2);
