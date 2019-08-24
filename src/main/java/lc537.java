@@ -3,13 +3,14 @@ import org.junit.Test;
 public class lc537 {
     @Test
     public void test() {
-        s2c("1+1i");
+//        s2c("1+1i");
+        s2c("1+-1i");
     }
 
     private int[] s2c(String s) {
         String[] strs = s.split("\\+");
         int x = Integer.parseInt(strs[0]);
-        int y = Integer.parseInt(strs[1].substring(0, strs.length - 1));
+        int y = Integer.parseInt(strs[1].substring(0, strs[1].length() - 1));
         return new int[]{x, y};
     }
 
