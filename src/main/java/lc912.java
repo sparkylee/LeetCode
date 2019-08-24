@@ -32,6 +32,7 @@ public class lc912 {
     }
 
     public int[] sortArray(int[] nums) {
+        sortArray(nums, 0, nums.length - 1);
         return nums;
     }
 }
