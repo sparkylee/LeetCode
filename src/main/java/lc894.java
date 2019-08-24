@@ -26,6 +26,7 @@ public class lc894 {
 
     public List<TreeNode> allPossibleFBT(int N) {
         List<List<TreeNode>> results = new ArrayList<>();
+        if (N % 2 == 0) return new ArrayList<>();
         List<TreeNode> t0 = new ArrayList<>();
         t0.add(new TreeNode(0));
         results.add(t0);
