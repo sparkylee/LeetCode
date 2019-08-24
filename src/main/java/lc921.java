@@ -12,7 +12,7 @@ public class lc921 {
                 if (p > 0) count++;
             }
         }
-        if (p < 0) count = -p;
+        if (p < 0) count += -p;
         return count;
     }
 }
