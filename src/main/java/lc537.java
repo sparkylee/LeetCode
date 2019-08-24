@@ -21,7 +21,7 @@ public class lc537 {
     }
 
     private String c2s(int[] complex) {
-        return String.valueOf(complex[0]) + ":" + String.valueOf(complex[1]) + "i";
+        return String.valueOf(complex[0]) + "+" + String.valueOf(complex[1]) + "i";
     }
 
     public String complexNumberMultiply(String a, String b) {
