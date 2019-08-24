@@ -26,6 +26,7 @@ public class lc797 {
     public List<List<Integer>> allPathsSourceTarget(int[][] graph) {
         List<List<Integer>> results = new ArrayList<>();
         List<Integer> candidate = new ArrayList<>();
+        candidate.add(0);
         reachabilities = new int[graph.length];
         allPathsSourceTarget(graph, 0, results, candidate);
         return results;
