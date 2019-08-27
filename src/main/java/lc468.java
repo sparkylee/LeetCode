@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class lc468 {
-    private String[] resps = {"IPv4", "IPv6", "Neither"};
 
     private int seekNextDot(String IP, int start) {
         while (start < IP.length()) {
@@ -56,7 +55,7 @@ public class lc468 {
     }
 
     public String validIPAddress(String IP) {
-        if (IP == null || "".equals(IP)) return resps[2];
+        if (IP == null || "".equals(IP)) return "Neither";
         if (toIPV4(IP)) return "IPv4";
         if (toIPV6(IP)) return "IPv6";
         return "Neither";
