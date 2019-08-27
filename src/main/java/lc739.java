@@ -21,7 +21,7 @@ public class lc739 {
                 if (top.val < node.val) {
                     warmer[top.index] = node.index - top.index;
                     stack.pop();
-                }
+                } else break;
             }
             stack.push(node);
         }
