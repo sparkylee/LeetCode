@@ -23,6 +23,7 @@ public class lc468 {
             if (end == -1 || start == end) return false;
             String sub = IP.substring(start, end);
             if (sub.length() > 1 && sub.charAt(0) == '0') return false;
+            if (sub.length() > 3) return false;
             int value = Integer.parseInt(sub);
             if (value > 255) return false;
             start = end + 1;
