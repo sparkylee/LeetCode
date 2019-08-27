@@ -1,5 +1,6 @@
 public class lc907 {
     private int mod(long x) {
+        if (x < 1000000007) return (int) x;
         return (int) (x % 1000000007);
     }
 
@@ -14,11 +15,11 @@ public class lc907 {
                 mi = i;
             }
         }
-        long a = mi - start;
-        long b = end - mi;
+        int a = mi - start;
+        int b = end - mi;
         long count = mv * (a + 1) * (b + 1);
-        long countLeft = sumSubarrayMins(A, start, mi - 1);
-        long countRight = sumSubarrayMins(A, mi + 1, end);
+        int countLeft = sumSubarrayMins(A, start, mi - 1);
+        int countRight = sumSubarrayMins(A, mi + 1, end);
         return mod(count + countLeft + countRight);
     }
 
