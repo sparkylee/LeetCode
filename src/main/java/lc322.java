@@ -8,6 +8,7 @@ public class lc322 {
         t(new int[]{3}, 4);
         t(new int[]{1}, 4);
         t(new int[]{58, 92, 387, 421, 194, 208, 231}, 7798);
+        t(new int[]{342, 268, 284, 65, 217, 461, 245, 249, 106}, 9278);
     }
 
     private void t(int[] coins, int amount) {
@@ -34,6 +35,7 @@ public class lc322 {
             if (newAmount < 0) return countBest;
             if (this.countMin >= 0 && countPre + j > this.countMin)
                 return countBest;
+            if (countBest >= 0 && j >= countBest) return countBest;
             int leftover = coinChange(coins, i + 1, newAmount, countPre + j);
             if (leftover >= 0) {
                 int count = leftover + j;
