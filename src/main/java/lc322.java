@@ -1,6 +1,10 @@
 import org.junit.Test;
 
 public class lc322 {
+    @Test
+    public void test() {
+        coinChange(new int[]{1, 2, 5}, 11);
+    }
     private int coinChange(int[] coins, int i, int amount) {
         if (amount == 0)
             return 0;
