@@ -1,14 +1,20 @@
 import org.junit.Test;
 
+import java.util.Arrays;
+
 public class lc322 {
     @Test
     public void test() {
+        long t1 = System.currentTimeMillis();
         t(new int[]{1, 2, 5}, 11);
         t(new int[]{3, 2, 5}, 11);
         t(new int[]{3}, 4);
         t(new int[]{1}, 4);
         t(new int[]{58, 92, 387, 421, 194, 208, 231}, 7798);
         t(new int[]{342, 268, 284, 65, 217, 461, 245, 249, 106}, 9278);
+        t(new int[]{120, 6, 320, 300, 100, 192, 212, 89, 106, 461}, 8332);
+        long t2 = System.currentTimeMillis();
+        System.out.println(t2 - t1);
     }
 
     private void t(int[] coins, int amount) {
@@ -28,6 +34,10 @@ public class lc322 {
 
         if (i >= coins.length || amount < 0) return -1;
         int j = 0;
+        if (i == coins.length - 1) {
+            if (coins[i] == 0) return -1;
+            j = amount / coins[i];
+        }
         int countBest = -1;
         while (true) {
             int extraction = coins[i] * j;
@@ -50,8 +60,10 @@ public class lc322 {
     }
 
     public int coinChange(int[] coins, int amount) {
+        Arrays.sort(coins);
         this.countMin = -1;
         int count = coinChange(coins, 0, amount, 0);
+
         return count;
     }
 
