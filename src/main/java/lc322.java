@@ -21,7 +21,7 @@ public class lc322 {
                 if (countBest == -1)
                     countBest = count;
                 else
-                    countBest = Math.max(count, countBest);
+                    countBest = Math.min(count, countBest);
             }
             j++;
         }
