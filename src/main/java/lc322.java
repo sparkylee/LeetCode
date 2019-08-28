@@ -9,7 +9,7 @@ public class lc322 {
         if (amount == 0)
             return 0;
         if (i >= coins.length) return -1;
-        int j = 1;
+        int j = 0;
         int countBest = -1;
         while (true) {
             int extraction = coins[i] * j;
