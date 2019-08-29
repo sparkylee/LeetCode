@@ -1,6 +1,7 @@
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class lc322 {
     @Test
@@ -39,8 +40,9 @@ public class lc322 {
             j = amount / coins[i];
         }
         int countBest = -1;
+        int extraction = 0;
         while (true) {
-            int extraction = coins[i] * j;
+            extraction = coins[i] * j;
             int newAmount = amount - extraction;
             if (newAmount < 0) return countBest;
             if (this.countMin >= 0 && countPre + j > this.countMin)
