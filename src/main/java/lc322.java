@@ -38,6 +38,8 @@ public class lc322 {
         if (i == coins.length - 1) {
             if (coins[i] == 0) return -1;
             j = amount / coins[i];
+            int modulus = amount % coins[i];
+            if (modulus != 0) return -1;
         }
         int countBest = -1;
         int extraction = 0;
