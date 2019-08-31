@@ -13,7 +13,7 @@ public class lc347 {
             int count = 1;
             if (map.containsKey(x))
                 count += map.get(x);
-            map.put(x, +1);
+            map.put(x, count);
         }
         int maxCount = 0;
         for (Map.Entry<Integer, Integer> elem : map.entrySet()) {
