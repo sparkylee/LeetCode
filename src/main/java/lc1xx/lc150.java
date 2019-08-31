@@ -1,3 +1,5 @@
+package lc1xx;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -6,29 +8,25 @@ import java.util.List;
 public  class lc150
 {
     @Test
-    public void test1()
-    {
+    public void test1() {
         tc(new String []{"2", "1", "+", "3", "*"});
         tc(new String []{"4", "13", "5", "/", "+"});
         tc(new String []{"10", "6", "9", "3", "+", "-11", "*", "/", "*", "17", "+", "5", "+"});
     }
 
-    private void tc(String [] tokens)
-    {
+    private void tc(String[] tokens) {
         Solution s = new Solution();
         int result = s.evalRPN(tokens);
         System.out.println(result);
     }
+
     class Solution {
         public int evalRPN(String[] tokens) {
             List<Object> stack = new ArrayList<>();
-            for(String str: tokens)
-            {
-                if(str.length()==1 )
-                {
+            for (String str : tokens) {
+                if (str.length() == 1) {
                     char c = str.charAt(0);
-                    if(c=='+' || c=='-' || c=='*' ||  c=='/')
-                    {
+                    if (c == '+' || c == '-' || c == '*' || c == '/') {
                         int op_back =(Integer) stack.get(stack.size()-1);
                         stack.remove(stack.size()-1)  ;
                         int op_front =(Integer) stack.get(stack.size()-1);

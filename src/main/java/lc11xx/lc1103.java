@@ -1,3 +1,5 @@
+package lc11xx;
+
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -37,8 +39,7 @@ public class lc1103 {
             if (candies >= assign) {
                 results[i - 1] += assign;
                 candies -= assign;
-            }
-            else {
+            } else {
                 results[i - 1] += candies;
                 break;
             }

@@ -1,3 +1,5 @@
+package lc1xx;
+
 public class lc146 {
     class LRUCache {
 

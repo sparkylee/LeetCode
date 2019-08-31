@@ -1,3 +1,5 @@
+package lc11xx;
+
 import java.util.Arrays;
 
 public class lc1154 {

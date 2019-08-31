@@ -1,3 +1,5 @@
+package lc1xx;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -8,8 +10,7 @@ import java.util.Map;
 public  class lc166
 {
     @Test
-    public void test1()
-    {
+    public void test1() {
         tc(1,2);
         tc(2,1);
         tc(2,3);
@@ -23,12 +24,12 @@ public  class lc166
 
     }
 
-    private void tc(int numerator, int denominator)
-    {
+    private void tc(int numerator, int denominator) {
         Solution s = new Solution();
         String str = s.fractionToDecimal(numerator,denominator);
         System.out.println(str);
     }
+
     class Solution {
         long gcd(long numerator, long denominator) //numerator < denominator
         {
@@ -36,6 +37,7 @@ public  class lc166
             if(mod==0) return numerator;
             return gcd(mod,numerator);
         }
+
         public String fractionToDecimal(int numerator1, int denominator1) {
             long numeratorL = numerator1;
             long denominatorL = denominator1;
@@ -53,8 +55,7 @@ public  class lc166
             int i = 0;
             num2PosMap.put(numeratorL,i);
             List<Character> decPart = new ArrayList<>();
-            while (true)
-            {
+            while (true) {
                 i++;
                 numeratorL = numeratorL*10;
                 long d = numeratorL/denominatorL;
@@ -67,14 +68,12 @@ public  class lc166
             StringBuilder sb = new StringBuilder();
             sb.append(intPart.toString());
             sb.append('.');
-            if(numeratorL==0)
-            {
+            if (numeratorL == 0) {
                 for(char c: decPart) sb.append(c);
                 return (negative?"-":"")+sb.toString();
             }
             int start= num2PosMap.get(numeratorL);
-            for(int j=0;j<decPart.size();j++)
-            {
+            for (int j = 0; j < decPart.size(); j++) {
                 if(j==start)
                     sb.append('(');
                 sb.append(decPart.get(j));

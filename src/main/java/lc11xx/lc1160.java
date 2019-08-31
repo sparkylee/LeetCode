@@ -1,3 +1,5 @@
+package lc11xx;
+
 public class lc1160 {
     private void reset(int[] CS) {
         for (int i = 0; i < 26; i++)

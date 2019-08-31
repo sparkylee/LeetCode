@@ -1,3 +1,5 @@
+package lc1xx;
+
 import org.junit.Test;
 
 import java.util.*;

@@ -1,3 +1,5 @@
+package lc11xx;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -9,6 +11,7 @@ public class lc1114 {
     class Foo {
 
         private int c = 0;
+
         public Foo() {
             c = 0;
         }
@@ -25,6 +28,7 @@ public class lc1114 {
         private synchronized void set(int x) {
             this.c = x;
         }
+
         public void first(Runnable printFirst) throws InterruptedException {
             wait(0);
             // printFirst.run() outputs "first". Do not change or remove this line.
