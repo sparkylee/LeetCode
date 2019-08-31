@@ -19,18 +19,19 @@ public class lc347 {
         for (Map.Entry<Integer, Integer> elem : map.entrySet()) {
             maxCount = Math.max(elem.getValue(), maxCount);
         }
-        Integer[] array = new Integer[maxCount];
-        for (int i = 0; i < array.length; i++)
-            array[i] = null;
-        for (Map.Entry<Integer, Integer> elem : map.entrySet()) {
-            array[elem.getValue() - 1] = elem.getKey();
-        }
+        List<List<Integer>> array = new ArrayList<>();
+        for (int i = 0; i < maxCount; i++)
+            array.add(new ArrayList<>());
+        for (Map.Entry<Integer, Integer> elem : map.entrySet())
+            array.get(elem.getValue() - 1).add(elem.getKey());
+
         List<Integer> results = new ArrayList<>();
-        for (int i = array.length - 1; i >= 0; i--) {
+        for (int i = array.size() - 1; i >= 0; i--) {
             if (k == 0) break;
-            if (array[i] != null) {
-                results.add(array[i]);
-                k--;
+            List<Integer> lst = array.get(i);
+            if (!lst.isEmpty()) {
+                results.addAll(lst);
+                k = k - lst.size();
             }
         }
         return results;
