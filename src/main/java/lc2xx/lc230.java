@@ -1,3 +1,5 @@
+package lc2xx;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -6,35 +8,35 @@ import java.util.List;
 public  class lc230
 {
 
-//    Definition for a binary tree node.
+    //    Definition for a binary tree node.
     public class TreeNode {
         int val;
         TreeNode left;
         TreeNode right;
+
         TreeNode(int x) { val = x; }
     }
-    private TreeNode TN(Integer x)
-    {
+
+    private TreeNode TN(Integer x) {
         if(x==null) return null;
         return new TreeNode(x);
     }
-    private TreeNode [] createTNs(Integer [] nums)
-    {
+
+    private TreeNode[] createTNs(Integer[] nums) {
         TreeNode [] treeNodes = new TreeNode[nums.length];
-        for(int i=0;i<nums.length; i++)
+        for (int i = 0; i < nums.length; i++)
             treeNodes[i] = TN(nums[i]);
         return treeNodes;
     }
-    private TreeNode linkTNs(TreeNode [] treeNodes)
-    {
+
+    private TreeNode linkTNs(TreeNode[] treeNodes) {
         if(treeNodes==null || treeNodes.length < 1)
             return null;
         int i = 0;
         int len = treeNodes.length;
         int count = 1;
         int j = count;
-        while(true)
-        {
+        while (true) {
             int jj = 0;
             for (int ii = 0; ii < count; ii++) {
                 if (treeNodes[i + ii] == null)
@@ -66,9 +68,9 @@ public  class lc230
         int result = kthSmallest(root, k);
         System.out.println(result);
     }
+
     @Test
-    public void test1()
-    {
+    public void test1() {
         Integer[] nums = {3, 1, 4, null, 2};
         testTreeNodes(nums, 1);
     }
@@ -84,14 +86,12 @@ public  class lc230
     int result = 0;
     int count = 0;
 
-    void countLeft(TreeNode root, int k)
-    {
+    void countLeft(TreeNode root, int k) {
         if(this.found || root==null)
             return;
         countLeft(root.left, k);
         this.count ++;
-        if (this.count == k)
-        {
+        if (this.count == k) {
             this.found = true;
             this.result = root.val;
             return;
@@ -99,6 +99,7 @@ public  class lc230
         countLeft(root.right, k);
         return;
     }
+
     public int kthSmallest(TreeNode root, int k) {
         countLeft(root,k);
         return this.result;

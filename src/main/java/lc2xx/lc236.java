@@ -1,3 +1,5 @@
+package lc2xx;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -94,6 +96,7 @@ public class lc236 {
         TreeNode node;
         boolean left;
         boolean right;
+
         Record(TreeNode node, boolean left, boolean right) {
             this.node = node;
             this.left = left;

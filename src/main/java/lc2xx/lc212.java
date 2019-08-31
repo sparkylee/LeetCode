@@ -1,3 +1,5 @@
+package lc2xx;
+
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -11,24 +13,23 @@ public  class lc212
 
 
     @Test
-    public void tet1()
-    {
+    public void tet1() {
         char [][] board = {{'o','a','a','n'}, {'e','t','a','e'},{'i','h','k','r'},{'i','f','l','v'}};
         String [] words = {"oath","pea","eat","rain","","aak","rvlf"};
         //String [] words = {"oath","pea","eat","rain"};
 //        String [] words = {""};
         tc(board,words);
     }
+
     @Test
-    public void test3()
-    {
+    public void test3() {
         char [][] board = {{'s','e','e','n','e','w'},{'t','m','r','i','v','a'},{'o','b','s','i','b','d'},{'w','m','y','s','e','n'},{'l','t','s','n','s','a'},{'i','e','z','l','g','n'}};
         String [] words = this.readFile();
-       // String [] words = new String[]{"riven"};
+        // String [] words = new String[]{"riven"};
         tc(board,words);
     }
-    private String [] readFile()
-    {
+
+    private String[] readFile() {
         String fileName = "src/main/java/lc212_1.txt";
 
         // This will reference one line at a time
@@ -49,13 +50,11 @@ public  class lc212
 
             // Always close files.
             bufferedReader.close();
-        }
-        catch(FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             System.out.println(
                     "Unable to open file '" +
                             fileName + "'");
-        }
-        catch(IOException ex) {
+        } catch (IOException ex) {
             System.out.println(
                     "Error reading file '"
                             + fileName + "'");
@@ -65,19 +64,16 @@ public  class lc212
         String [] words = lines.toString().split(" ");
         return words;
     }
+
     @Test
-    public void test2()
-    {
+    public void test2() {
         String [] words1 = {"seen","seer","stob","stow","wots","embow","bowl","myst","teil","riva","rive","riven","rine","reest","reem","renew","sise","neem","irene","inerm","send","vire","vine","viner","bend","benda","bena","besa","besan","sane","sand","sang","wene","wave","wadna","avine","avener","daven","anes","anesis","anda","nane","nanes"};
         String [] words2 = {"anda","anes","anesis","avener","avine","bena","bend","benda","besa","besan","bowl","daven","embow","inerm","irene","myst","nane","nanes","neem","reem","reest","renew","rine","riva","rive","riven","sand","sane","sang","seen","seer","send","sise","stob","stow","teil","vine","viner","vire","wadna","wave","wene","wots"};
 
-        for(String w1: words1)
-        {
+        for (String w1 : words1) {
             boolean found = false;
-            for(String w2: words2)
-            {
-                if(w2.equals(w1))
-                {
+            for (String w2 : words2) {
+                if (w2.equals(w1)) {
                     found = true;
                     break;
                 }
@@ -86,12 +82,11 @@ public  class lc212
         }
 
     }
-    private void tc(char[][] board, String [] words)
-    {
+
+    private void tc(char[][] board, String[] words) {
         Solution sol = new Solution();
         List<String> ws = sol.findWords(board,words);
-        for(String str: ws)
-        {
+        for (String str : ws) {
             System.out.print("\""+str+"\",");
         }
         System.out.println();
@@ -101,6 +96,7 @@ public  class lc212
         class Trie {
             Map<Character, Trie> c2node = new HashMap<>();
             boolean isWord = false;
+
             /**
              * Initialize your data structure here.
              */
@@ -135,30 +131,29 @@ public  class lc212
                 }
                 return p.isWord;
             }
-            public void removeSubTrie()
-            {
+
+            public void removeSubTrie() {
                 Iterator it = this.c2node.entrySet().iterator();
                 while (it.hasNext()) {
-                   Map.Entry<Character, Trie> pair = (Map.Entry)it.next();
-                   if(!pair.getValue().isWord && pair.getValue().isEmpty())
+                    Map.Entry<Character, Trie> pair = (Map.Entry) it.next();
+                    if (!pair.getValue().isWord && pair.getValue().isEmpty())
                         it.remove();
                 }
             }
-            public boolean isEmpty()
-            {
+
+            public boolean isEmpty() {
                 return !this.isWord && this.c2node.isEmpty();
             }
         }
-        private char getChar(char[][] board,int x,int y)
-        {
+
+        private char getChar(char[][] board, int x, int y) {
             if(x<0 || x>=board[0].length || y<0 || y>=board.length) return '.';
             return board[y][x];
         }
-        private void findWord(char[][] board,int x,int y,
-                                 Trie trie,List<String> ws, StringBuilder sb)
-        {
-            if(trie.isWord)
-            {
+
+        private void findWord(char[][] board, int x, int y,
+                              Trie trie, List<String> ws, StringBuilder sb) {
+            if (trie.isWord) {
                 ws.add(sb.toString());
                 trie.isWord = false;
             }
@@ -169,8 +164,7 @@ public  class lc212
             sb.append(cb);
             while (it.hasNext()) {
                 Map.Entry<Character, Trie> pair = (Map.Entry)it.next();
-                if(pair.getKey().equals(cb))
-                {
+                if (pair.getKey().equals(cb)) {
                     findWord(board,x-1,y,pair.getValue(),ws,sb);
                     findWord(board,x+1,y,pair.getValue(),ws,sb);
                     findWord(board,x,y-1,pair.getValue(),ws,sb);
@@ -182,11 +176,10 @@ public  class lc212
             board[y][x]=cb;
             return ;
         }
-        private void findWord(char[][] board, Trie trie,List<String> ws)
-        {
-            for(int i=0;i<board[0].length;i++)
-                for(int j=0;j<board.length;j++)
-                {
+
+        private void findWord(char[][] board, Trie trie, List<String> ws) {
+            for (int i = 0; i < board[0].length; i++)
+                for (int j = 0; j < board.length; j++) {
                     StringBuilder sb = new StringBuilder();
                     findWord(board,i,j,trie,ws,sb);
                     if(trie.isEmpty()) return;
@@ -194,6 +187,7 @@ public  class lc212
 
 
         }
+
         public List<String> findWords(char[][] board, String[] words) {
             List<String> ws = new ArrayList<>();
             if(board==null || board.length<1) return ws;

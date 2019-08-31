@@ -1,3 +1,5 @@
+package lc2xx;
+
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -8,15 +10,14 @@ public  class lc209
 
 
     @Test
-    public void tet1()
-    {
+    public void tet1() {
         tc(7,new int[]{2,3,1,2,4,3});
         tc(7,new int[]{1,1,1});
         tc(3,new int[]{1,1,1});
 
     }
-    private void tc(int s, int [] nums)
-    {
+
+    private void tc(int s, int[] nums) {
         Solution sol = new Solution();
         int result = sol.minSubArrayLen(s,nums);
         System.out.println(result);
@@ -28,11 +29,9 @@ public  class lc209
             int i=0,j=0;
             int sum = 0;
             int len = nums.length;
-            while(j<nums.length)
-            {
+            while (j < nums.length) {
                 sum += nums[j];
-                while(sum - nums[i]>=s)
-                {
+                while (sum - nums[i] >= s) {
                     sum -= nums[i];
                     i++;
                 }

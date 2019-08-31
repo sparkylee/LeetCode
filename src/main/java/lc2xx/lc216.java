@@ -1,3 +1,5 @@
+package lc2xx;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
