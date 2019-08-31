@@ -4,7 +4,7 @@ public class lc547 {
     private void findCircleNum(int[][] M, int i, int[] marks, int k) {
         if (i < 0 || i >= M.length || marks[i] >= 0) return;
         marks[i] = k;
-        for (int j = i + 1; j < M[i].length; j++)
+        for (int j = 0; j < M[i].length; j++)
             if (M[i][j] == 1)
                 findCircleNum(M, j, marks, k);
     }
