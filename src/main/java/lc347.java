@@ -23,7 +23,7 @@ public class lc347 {
         for (int i = 0; i < array.length; i++)
             array[i] = null;
         for (Map.Entry<Integer, Integer> elem : map.entrySet()) {
-            array[elem.getValue()] = elem.getKey();
+            array[elem.getValue() - 1] = elem.getKey();
         }
         List<Integer> results = new ArrayList<>();
         for (int i = array.length - 1; i >= 0; i--) {
