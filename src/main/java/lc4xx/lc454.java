@@ -1,8 +1,27 @@
 package lc4xx;
 
+import org.junit.Test;
+
 import java.util.Arrays;
 
 public class lc454 {
+    @Test
+    public void test() {
+        int[] A = {1, 2};
+        int[] B = {-2, -1};
+        int[] C = {-1, 2};
+        int[] D = {0, 2};
+        fourSumCount(A, B, C, D);
+    }
+
+    @Test
+    public void test1() {
+        int[] A = {1, 2, 2};
+        int[] B = {-2, -1, -1};
+        int[] C = {-1, 2, -1};
+        int[] D = {0, 2, 0};
+        fourSumCount(A, B, C, D);
+    }
     class SArray {
         int[] X;
         int[] Y;
@@ -26,13 +45,16 @@ public class lc454 {
         int[] X = new int[count];
         int[] Y = new int[count];
         int i = 0;
-        while (i < count) {
-            X[i] = Z[i];
-            int j = i;
-            while (j < count && Z[j] == Z[i]) {
+        int k = 0;
+        while (k < Z.length) {
+            X[i] = Z[k];
+            int j = k;
+            while (j < Z.length && Z[j] == Z[k]) {
                 Y[i]++;
                 j++;
             }
+            i++;
+            k = j;
         }
         return new SArray(X, Y);
     }
@@ -56,12 +78,15 @@ public class lc454 {
         SArray DS = convertSortedArray(D);
         int count = 0;
         for (int i = 0; i < AS.X.length; i++) {
-            for (int j = 0; i < BS.X.length; j++) {
+            for (int j = 0; j < BS.X.length; j++) {
                 for (int k = 0; k < CS.X.length; k++) {
                     int v = -(AS.X[i] + BS.X[j] + CS.X[k]);
                     int l = findValue(DS.X, 0, DS.X.length - 1, v);
                     if (l >= 0)
                         count += AS.Y[i] * BS.Y[j] * CS.Y[k] * DS.Y[l];
+                    else if (DS.X.length > 0 && DS.X[0] > v)
+                        return count;
+
                 }
             }
         }
