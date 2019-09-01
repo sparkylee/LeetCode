@@ -1,6 +1,9 @@
 package lc9xx;
 
+import org.junit.Test;
+
 public class lc919 {
+
     public class TreeNode {
         int val;
         TreeNode left;
@@ -11,6 +14,17 @@ public class lc919 {
         }
     }
 
+    @Test
+    public void test() {
+        TreeNode tn1 = TN(1);
+        CBTInserter cbtInserter = new CBTInserter(tn1);
+        cbtInserter.insert(2);
+        TreeNode r = cbtInserter.get_root();
+    }
+
+    private TreeNode TN(int v) {
+        return new TreeNode(v);
+    }
     class CBTInserter {
         TreeNode root;
         int k;
@@ -41,12 +55,13 @@ public class lc919 {
         }
 
         private TreeNode getLastNode(TreeNode root, int h, int k) {
-            int c0 = 2 << h - 1;
-            int c1 = 2 << (h + 1) - 1;
+            int c0 = (1 << (h - 1)) - 1;
+            int c1 = (1 << h) - 1;
             int half = c0;
             int index = k - c0;
             int delta;
             TreeNode nextRoot;
+            if (index == half) return root;
             if (index < half) {
                 nextRoot = root.left;
                 delta = c0;
