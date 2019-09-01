@@ -81,12 +81,11 @@ public class lc454 {
             for (int j = 0; j < BS.X.length; j++) {
                 for (int k = 0; k < CS.X.length; k++) {
                     int v = -(AS.X[i] + BS.X[j] + CS.X[k]);
+                    if (DS.X.length > 0 && DS.X[0] > v)
+                        break;
                     int l = findValue(DS.X, 0, DS.X.length - 1, v);
                     if (l >= 0)
                         count += AS.Y[i] * BS.Y[j] * CS.Y[k] * DS.Y[l];
-                    else if (DS.X.length > 0 && DS.X[0] > v)
-                        return count;
-
                 }
             }
         }
