@@ -3,6 +3,8 @@ package lc4xx;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class lc454 {
     @Test
@@ -76,6 +78,9 @@ public class lc454 {
         SArray CS = convertSortedArray(C);
         Arrays.sort(D);
         SArray DS = convertSortedArray(D);
+        Map<Integer, Integer> Dmap = new HashMap<>();
+        for (int a = 0; a < DS.X.length; a++)
+            Dmap.put(DS.X[a], DS.Y[a]);
         int count = 0;
         for (int i = 0; i < AS.X.length; i++) {
             for (int j = 0; j < BS.X.length; j++) {
@@ -83,9 +88,10 @@ public class lc454 {
                     int v = -(AS.X[i] + BS.X[j] + CS.X[k]);
                     if (DS.X.length > 0 && DS.X[0] > v)
                         break;
-                    int l = findValue(DS.X, 0, DS.X.length - 1, v);
-                    if (l >= 0)
-                        count += AS.Y[i] * BS.Y[j] * CS.Y[k] * DS.Y[l];
+//                    int l = findValue(DS.X, 0, DS.X.length - 1, v);
+                    Integer lc = Dmap.get(v);
+                    if (lc != null)
+                        count += AS.Y[i] * BS.Y[j] * CS.Y[k] * lc;
                 }
             }
         }
