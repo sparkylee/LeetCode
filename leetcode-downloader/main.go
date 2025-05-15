@@ -60,11 +60,12 @@ var (
 )
 
 type Config struct {
-	Username string `json:"username"`
+	LeetcodeSession string `json:"LEETCODE_SESSION"`
+	CsrfToken       string `json:"csrftoken"`
 }
 
 type Problem struct {
-	ID                 string `json:"id"`
+	ID                 int    `json:"id"` // Changed from string to int
 	TitleSlug          string `json:"titleSlug"`
 	Title              string `json:"title"`
 	TranslatedTitle    string `json:"translatedTitle"`
@@ -92,7 +93,7 @@ type ProblemsetResponse struct {
 }
 
 type Submission struct {
-	ID            string `json:"id"`
+	ID            int    `json:"id"`
 	Title         string `json:"title"`
 	TitleSlug     string `json:"titleSlug"`
 	Status        int    `json:"status"`
@@ -139,28 +140,62 @@ type SubmissionDetailsResponse struct {
 }
 
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
+	// Load config
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	session, csrfToken, err := parseCookies()
-	if err != nil {
-		log.Fatalf("Failed to parse cookies: %v", err)
-	}
-
-	problemsetQuery, submissionListQuery, submissionDetailsQuery, err := loadQueries()
+	// Load queries
+	problemsetQuery, _, _, err := loadQueries()
 	if err != nil {
 		log.Fatalf("Failed to load queries: %v", err)
 	}
 
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		log.Fatalf("Failed to create output directory: %v", err)
+	// Parse cookies
+	session, csrfToken, err := parseCookies()
+	if err != nil {
+		log.Fatalf("Failed to parse cookies: %v", err)
+	}
+	if config.LeetcodeSession != "" {
+		session = config.LeetcodeSession
+	}
+	if config.CsrfToken != "" {
+		csrfToken = config.CsrfToken
 	}
 
-	fetchSubmissions(config, session, csrfToken, problemsetQuery, submissionListQuery, submissionDetailsQuery)
+	// Set up HTTP client
+	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+	}
+	httpClient := &http.Client{
+		Transport: transport,
+		Timeout:   30 * time.Second,
+	}
+
+	// Fetch solved problems
+	problems, err := fetchSubmissions(httpClient, session, csrfToken, problemsetQuery)
+	if err != nil {
+		log.Fatalf("Failed to fetch submissions: %v", err)
+	}
+	if problems == nil || len(problems) == 0 {
+		log.Printf("No solved problems found for the user")
+		return // Exit gracefully or proceed to other tasks
+	}
+
+	// Process submissions (example, adjust based on your actual code)
+	for _, problem := range problems {
+		log.Printf("Processing problem: %s (%s)", problem.Title, problem.TitleSlug)
+		// Call submissionList and submissionDetails queries (pseudo-code)
+		// submissions, err := fetchSubmissionList(httpClient, session, csrfToken, submissionListQuery, problem.TitleSlug)
+		// if err != nil {
+		//     log.Printf("Failed to fetch submissions for %s: %v", problem.TitleSlug, err)
+		//     continue
+		// }
+		// Process submissions...
+	}
+
+	log.Printf("Completed processing %d problems", len(problems))
 }
 
 func loadConfig() (*Config, error) {
@@ -174,9 +209,9 @@ func loadConfig() (*Config, error) {
 		return nil, fmt.Errorf("failed to parse config.json: %w", err)
 	}
 
-	if config.Username == "" {
-		return nil, fmt.Errorf("username is required in config.json")
-	}
+	//if config.Username == "" {
+	//	return nil, fmt.Errorf("username is required in config.json")
+	//}
 
 	return &config, nil
 }
@@ -285,6 +320,7 @@ func fetchSubmissions(httpClient *http.Client, session, csrfToken string, proble
 		req := graphql.NewRequest(problemsetQuery)
 		variables := map[string]interface{}{
 			"filters": map[string]interface{}{
+				"filterCombineType": "ALL", // Changed to "ALL"
 				"statusFilter": map[string]interface{}{
 					"questionStatuses": []string{"SOLVED"}, // Reverted to "SOLVED"
 					"operator":         "IS",
@@ -444,7 +480,7 @@ func fetchSubmissionsForProblem(client *graphql.Client, questionSlug, problemTit
 	return totalSubmissions
 }
 
-func getSubmissionDetails(client *graphql.Client, submissionID string, query, session, csrfToken string) (string, error) {
+func getSubmissionDetails(client *graphql.Client, submissionID int, query, session, csrfToken string) (string, error) {
 	var resp SubmissionDetailsResponse
 	req := graphql.NewRequest(query)
 	req.Var("submissionId", submissionID)
