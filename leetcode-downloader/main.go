@@ -71,16 +71,24 @@ type Problem struct {
 	QuestionFrontendID string `json:"questionFrontendId"`
 	PaidOnly           bool   `json:"paidOnly"`
 	Difficulty         string `json:"difficulty"`
-	Status             string `json:"status"`
+	TopicTags          []struct {
+		Name           string `json:"name"`
+		Slug           string `json:"slug"`
+		NameTranslated string `json:"nameTranslated"`
+	} `json:"topicTags"`
+	Status          string  `json:"status"`
+	IsInMyFavorites bool    `json:"isInMyFavorites"`
+	Frequency       float64 `json:"frequency"`
+	AcRate          float64 `json:"acRate"`
 }
 
 type ProblemsetResponse struct {
-	Data struct {
-		ProblemsetQuestionListV2 struct {
-			Questions []Problem `json:"questions"`
-			HasMore   bool      `json:"hasMore"`
-		} `json:"problemsetQuestionListV2"`
-	} `json:"data"`
+	ProblemsetQuestionListV2 struct {
+		Questions      []Problem `json:"questions"`
+		TotalLength    int       `json:"totalLength"`
+		FinishedLength int       `json:"finishedLength"`
+		HasMore        bool      `json:"hasMore"`
+	} `json:"problemsetQuestionListV2"`
 }
 
 type Submission struct {
@@ -264,80 +272,81 @@ func loadQueries() (string, string, string, error) {
 	return problemsetQuery, submissionListQuery, submissionDetailsQuery, nil
 }
 
-func fetchSubmissions(config *Config, session, csrfToken, problemsetQuery, submissionListQuery, submissionDetailsQuery string) {
-	// Create a custom HTTP client with timeout
-	httpClient := &http.Client{
-		Timeout: defaultTimeout,
-	}
+// fetchSubmissions fetches solved problems from LeetCode
+func fetchSubmissions(httpClient *http.Client, session, csrfToken string, problemsetQuery string) ([]Problem, error) {
 	client := graphql.NewClient("https://leetcode.com/graphql", graphql.WithHTTPClient(httpClient))
-
-	// Step 1: Get solved problems
-	var problemResp ProblemsetResponse
-	problemReq := graphql.NewRequest(problemsetQuery)
-	problemReq.Var("filters", map[string]interface{}{
-		"filterCombineType": "ALL",
-		"statusFilter": map[string]interface{}{
-			"questionStatuses": []string{"SOLVED"},
-			"operator":         "IS",
-		},
-		"difficultyFilter": map[string]interface{}{
-			"difficulties": []string{},
-			"operator":     "IS",
-		},
-		"languageFilter": map[string]interface{}{
-			"languageSlugs": []string{},
-			"operator":      "IS",
-		},
-		"topicFilter": map[string]interface{}{
-			"topicSlugs": []string{},
-			"operator":   "IS",
-		},
-		"acceptanceFilter":    map[string]interface{}{},
-		"frequencyFilter":     map[string]interface{}{},
-		"lastSubmittedFilter": map[string]interface{}{},
-		"publishedFilter":     map[string]interface{}{},
-		"companyFilter":       map[string]interface{}{"companySlugs": []string{}, "operator": "IS"},
-		"positionFilter":      map[string]interface{}{"positionSlugs": []string{}, "operator": "IS"},
-		"premiumFilter":       map[string]interface{}{"premiumStatus": []string{}, "operator": "IS"},
-	})
-	problemReq.Var("limit", 100)
-	problemReq.Var("searchKeyword", "")
-	problemReq.Var("skip", 0)
-	problemReq.Var("sortBy", map[string]string{"sortField": "CUSTOM", "sortOrder": "ASCENDING"})
-	problemReq.Var("categorySlug", "all-code-essentials")
-	problemReq.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
-	problemReq.Header.Set("X-CSRFToken", csrfToken)
-	problemReq.Header.Set("Content-Type", "application/json")
-	problemReq.Header.Set("Referer", "https://leetcode.com")
-	problemReq.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-
 	ctx := context.Background()
-	if err := client.Run(ctx, problemReq, &problemResp); err != nil {
-		log.Printf("Failed to fetch solved problems: %v", err)
-		return
+	var problems []Problem
+
+	limit := limitPerRequest
+	skip := 0
+
+	for {
+		req := graphql.NewRequest(problemsetQuery)
+		variables := map[string]interface{}{
+			"filters": map[string]interface{}{
+				"statusFilter": map[string]interface{}{
+					"questionStatuses": []string{"SOLVED"}, // Reverted to "SOLVED"
+					"operator":         "IS",
+				},
+				"difficultyFilter": map[string]interface{}{
+					"difficulties": []string{},
+					"operator":     "IS",
+				},
+				"languageFilter": map[string]interface{}{
+					"languageSlugs": []string{},
+					"operator":      "IS",
+				},
+				"topicFilter": map[string]interface{}{
+					"topicSlugs": []string{},
+					"operator":   "IS",
+				},
+			},
+			"limit":         limit,
+			"skip":          skip,
+			"searchKeyword": "",
+			"sortBy":        nil,
+			"categorySlug":  "all-code-essentials",
+		}
+		req.Var("filters", variables["filters"])
+		req.Var("limit", limit)
+		req.Var("skip", skip)
+		req.Var("searchKeyword", variables["searchKeyword"])
+		req.Var("sortBy", variables["sortBy"])
+		req.Var("categorySlug", variables["categorySlug"])
+		req.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
+		req.Header.Set("X-CSRFToken", csrfToken)
+
+		// Log query variables and headers for debugging
+		variablesJSON, _ := json.MarshalIndent(variables, "", "  ")
+		log.Printf("Sending problemsetQuery with variables: %s", variablesJSON)
+		log.Printf("Request headers: Cookie=%s, X-CSRFToken=%s",
+			req.Header.Get("Cookie"), req.Header.Get("X-CSRFToken"))
+
+		var problemResp ProblemsetResponse
+		if err := client.Run(ctx, req, &problemResp); err != nil {
+			return nil, fmt.Errorf("failed to fetch solved problems: %v", err)
+		}
+
+		// Log full response for debugging
+		respJSON, _ := json.MarshalIndent(problemResp, "", "  ")
+		log.Printf("Response: %s", respJSON)
+
+		problems = append(problems, problemResp.ProblemsetQuestionListV2.Questions...)
+
+		if !problemResp.ProblemsetQuestionListV2.HasMore || len(problemResp.ProblemsetQuestionListV2.Questions) == 0 {
+			break
+		}
+		skip += limit
 	}
 
-	solvedProblems := problemResp.Data.ProblemsetQuestionListV2.Questions
-	if len(solvedProblems) == 0 {
-		log.Println("No solved problems found for the user")
-		return
+	if len(problems) == 0 {
+		log.Printf("No solved problems found for the user")
+		return nil, nil // Allow program to continue
 	}
 
-	// Select up to maxProblems
-	selectedProblems := solvedProblems
-	if len(selectedProblems) > maxProblems {
-		selectedProblems = selectedProblems[:maxProblems]
-	}
-	log.Printf("Selected %d problem(s): %v", len(selectedProblems), selectedProblems)
-
-	// Step 2: Fetch submissions for each problem
-	totalSubmissionsAll := 0
-	for _, problem := range selectedProblems {
-		totalSubmissionsAll += fetchSubmissionsForProblem(client, problem.TitleSlug, problem.Title, session, csrfToken, submissionListQuery, submissionDetailsQuery)
-	}
-
-	log.Printf("Total submissions fetched and saved across all problems: %d", totalSubmissionsAll)
-	log.Println("Fetch complete!")
+	log.Printf("Fetched %d solved problems", len(problems))
+	return problems, nil
 }
 
 func fetchSubmissionsForProblem(client *graphql.Client, questionSlug, problemTitle, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
