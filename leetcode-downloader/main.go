@@ -26,7 +26,7 @@ const (
 	outputDir       = "leetcode_submissions"
 	limitPerRequest = 20
 	queryFile       = "query.graphql"
-	cookieFile      = "cookies.txt"
+	cookieFile      = "leetcode.com_cookies"
 	defaultTimeout  = 10 * time.Second
 	maxProblems     = 3
 )
