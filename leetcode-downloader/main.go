@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/schollz/progressbar/v3"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -93,7 +94,7 @@ type ProblemsetResponse struct {
 }
 
 type Submission struct {
-	ID            int    `json:"id"`
+	ID            string `json:"id"`
 	Title         string `json:"title"`
 	TitleSlug     string `json:"titleSlug"`
 	Status        int    `json:"status"`
@@ -138,6 +139,10 @@ type SubmissionDetailsResponse struct {
 }
 
 func main() {
+	// Add a flag for direct titleSlug input
+	testSlug := flag.String("slug", "", "Directly fetch submissions for this titleSlug and exit")
+	flag.Parse()
+
 	// Load config
 	config, err := loadConfig()
 	if err != nil {
@@ -171,8 +176,23 @@ func main() {
 		Timeout:   30 * time.Second,
 	}
 
+	// If testSlug is provided, fetch and print submissions for that slug, then exit
+	if *testSlug != "" {
+		log.Printf("Testing fetchSubmissionList for titleSlug: %s", *testSlug)
+		submissions, err := fetchSubmissionList(httpClient, session, csrfToken, submissionListQuery, *testSlug)
+		if err != nil {
+			log.Fatalf("Failed to fetch submissions for %s: %v", *testSlug, err)
+		}
+		for _, submission := range submissions {
+			log.Printf("Submission ID: %d, Lang: %s, Status: %s, Timestamp: %s",
+				submission.ID, submission.Lang, submission.StatusDisplay, submission.Timestamp)
+		}
+		log.Printf("Fetched %d submissions for %s", len(submissions), *testSlug)
+		return
+	}
+
 	// Fetch solved problems
-	problems, err := fetchSubmissions(httpClient, session, csrfToken, problemsetQuery)
+	problems, err := fetchSolvedProblems(httpClient, session, csrfToken, problemsetQuery)
 	if err != nil {
 		log.Fatalf("Failed to fetch submissions: %v", err)
 	}
@@ -310,43 +330,129 @@ func loadQueries() (string, string, string, error) {
 }
 
 // fetchSubmissionList fetches submissions for a problem
+//
+//	func fetchSubmissionListV1(httpClient *http.Client, session, csrfToken, submissionListQuery, titleSlug string) ([]Submission, error) {
+//		client := graphql.NewClient("https://leetcode.com/graphql", graphql.WithHTTPClient(httpClient))
+//		ctx := context.Background()
+//		var submissions []Submission
+//
+//		limit := limitPerRequest
+//		offset := 0
+//
+//		for {
+//			req := graphql.NewRequest(submissionListQuery)
+//			variables := map[string]interface{}{
+//				"offset":       offset,
+//				"limit":        limit,
+//				"lastKey":      nil,        // or a string value if paginating
+//				"questionSlug": titleSlug,
+//			}
+//			req.Var("questionSlug", titleSlug)
+//			req.Var("limit", limit)
+//			req.Var("offset", offset)
+//			req.Var("lastKey", nil)
+//			// Set operation name
+//			req.Header.Set("X-Operation-Name", "submissionList")
+//
+//			req.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
+//			req.Header.Set("X-CSRFToken", csrfToken)
+//			req.Header.Set("Referer", "https://leetcode.com")
+//			req.Header.Set("Content-Type", "application/json")
+//			req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+//			// Log query variables
+//			variablesJSON, _ := json.MarshalIndent(variables, "", "  ")
+//			log.Printf("Sending submissionListQuery for %s with variables: %s", titleSlug, variablesJSON)
+//
+//			var submissionResp SubmissionListResponse
+//			if err := client.Run(ctx, req, &submissionResp); err != nil {
+//				return nil, fmt.Errorf("failed to fetch submissions for %s: %v", titleSlug, err)
+//			}
+//
+//			// Log response
+//			respJSON, _ := json.MarshalIndent(submissionResp, "", "  ")
+//			log.Printf("SubmissionList response for %s: %s", titleSlug, respJSON)
+//
+//			submissions = append(submissions, submissionResp.SubmissionList.Submissions...)
+//
+//			if !submissionResp.SubmissionList.HasNext || len(submissionResp.SubmissionList.Submissions) == 0 {
+//				break
+//			}
+//			offset += limit
+//		}
+//
+//		log.Printf("Fetched %d submissions for %s", len(submissions), titleSlug)
+//		return submissions, nil
+//	}
 func fetchSubmissionList(httpClient *http.Client, session, csrfToken, submissionListQuery, titleSlug string) ([]Submission, error) {
-	client := graphql.NewClient("https://leetcode.com/graphql", graphql.WithHTTPClient(httpClient))
-	ctx := context.Background()
 	var submissions []Submission
-
 	limit := limitPerRequest
 	offset := 0
 
 	for {
-		req := graphql.NewRequest(submissionListQuery)
-		variables := map[string]interface{}{
-			"questionSlug": titleSlug,
-			"limit":        limit,
-			"offset":       offset,
+		requestBody := struct {
+			Query         string                 `json:"query"`
+			Variables     map[string]interface{} `json:"variables"`
+			OperationName string                 `json:"operationName"`
+		}{
+			Query: submissionListQuery,
+			Variables: map[string]interface{}{
+				"offset":       offset,
+				"limit":        limit,
+				"lastKey":      nil,
+				"questionSlug": titleSlug,
+				"lang":         nil,
+				"status":       10,
+			},
+			OperationName: "submissionList",
 		}
-		req.Var("questionSlug", titleSlug)
-		req.Var("limit", limit)
-		req.Var("offset", offset)
+
+		bodyBytes, err := json.Marshal(requestBody)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal request body: %v", err)
+		}
+		log.Printf("Request body: %s", string(bodyBytes))
+
+		req, err := http.NewRequest("POST", "https://leetcode.com/graphql", bytes.NewBuffer(bodyBytes))
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request: %v", err)
+		}
+
 		req.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
 		req.Header.Set("X-CSRFToken", csrfToken)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Referer", "https://leetcode.com")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
-		// Log query variables
-		variablesJSON, _ := json.MarshalIndent(variables, "", "  ")
-		log.Printf("Sending submissionListQuery for %s with variables: %s", titleSlug, variablesJSON)
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to execute request: %v", err)
+		}
+		defer resp.Body.Close()
+		bodyBytes, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response body: %v", err)
+		}
+		log.Printf("Response body: %s", string(bodyBytes))
 
-		var submissionResp SubmissionListResponse
-		if err := client.Run(ctx, req, &submissionResp); err != nil {
-			return nil, fmt.Errorf("failed to fetch submissions for %s: %v", titleSlug, err)
+		// Create a new reader with the bytes for decoding the JSON
+		resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		var response struct {
+			Data struct {
+				QuestionSubmissionList struct {
+					LastKey     string       `json:"lastKey"`
+					HasNext     bool         `json:"hasNext"`
+					Submissions []Submission `json:"submissions"`
+				} `json:"questionSubmissionList"`
+			} `json:"data"`
 		}
 
-		// Log response
-		respJSON, _ := json.MarshalIndent(submissionResp, "", "  ")
-		log.Printf("SubmissionList response for %s: %s", titleSlug, respJSON)
+		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+			return nil, fmt.Errorf("failed to decode response: %v", err)
+		}
 
-		submissions = append(submissions, submissionResp.SubmissionList.Submissions...)
+		submissions = append(submissions, response.Data.QuestionSubmissionList.Submissions...)
 
-		if !submissionResp.SubmissionList.HasNext || len(submissionResp.SubmissionList.Submissions) == 0 {
+		if !response.Data.QuestionSubmissionList.HasNext || len(response.Data.QuestionSubmissionList.Submissions) == 0 {
 			break
 		}
 		offset += limit
@@ -356,8 +462,8 @@ func fetchSubmissionList(httpClient *http.Client, session, csrfToken, submission
 	return submissions, nil
 }
 
-// fetchSubmissions fetches solved problems from LeetCode
-func fetchSubmissions(httpClient *http.Client, session, csrfToken string, problemsetQuery string) ([]Problem, error) {
+// fetchSolvedProblems fetches solved problems from LeetCode
+func fetchSolvedProblems(httpClient *http.Client, session, csrfToken string, problemsetQuery string) ([]Problem, error) {
 	client := graphql.NewClient("https://leetcode.com/graphql", graphql.WithHTTPClient(httpClient))
 	ctx := context.Background()
 	var problems []Problem
@@ -529,7 +635,7 @@ func fetchSubmissionsForProblem(client *graphql.Client, questionSlug, problemTit
 	return totalSubmissions
 }
 
-func getSubmissionDetails(client *graphql.Client, submissionID int, query, session, csrfToken string) (string, error) {
+func getSubmissionDetails(client *graphql.Client, submissionID string, query, session, csrfToken string) (string, error) {
 	var resp SubmissionDetailsResponse
 	req := graphql.NewRequest(query)
 	req.Var("submissionId", submissionID)
