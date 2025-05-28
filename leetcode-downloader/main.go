@@ -144,10 +144,10 @@ func main() {
 	flag.Parse()
 
 	// Load config
-	config, err := loadConfig()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
+	//config, err := loadConfig()
+	//if err != nil {
+	//	log.Fatalf("Failed to load config: %v", err)
+	//}
 
 	// Load queries
 	problemsetQuery, submissionListQuery, _, err := loadQueries()
@@ -160,12 +160,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to parse cookies: %v", err)
 	}
-	if config.LeetcodeSession != "" {
-		session = config.LeetcodeSession
-	}
-	if config.CsrfToken != "" {
-		csrfToken = config.CsrfToken
-	}
+	//if config.LeetcodeSession != "" {
+	//	session = config.LeetcodeSession
+	//}
+	//if config.CsrfToken != "" {
+	//	csrfToken = config.CsrfToken
+	//}
 
 	// Set up HTTP client
 	transport := &http.Transport{
