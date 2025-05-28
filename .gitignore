@@ -2,3 +2,4 @@ target/*
 *.iml
 .idea
 *cookies.txt
+leetcode.com_cookies.txt
