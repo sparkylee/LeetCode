@@ -31,6 +31,7 @@ const (
 var (
 	langExt = map[string]string{
 		"cpp":        "cpp",
+		"c++":        "cpp",
 		"java":       "java",
 		"python":     "py",
 		"python3":    "py",
