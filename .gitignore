@@ -1,4 +1,4 @@
 target/*
 *.iml
 .idea
-*_cookies.txt
+*cookies.txt
