@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -548,29 +548,47 @@ func getSubmissionDetails(httpClient *http.Client, submissionID, query, session,
 
 	return response.Data.SubmissionDetails.Code, nil
 }
-func saveSubmission(submission Submission, code string, index int) error {
-	lang := strings.ToLower(submission.LangName)
+func getQuestionDirectory(id int, title string) string {
+	// Format: "0001.Title"
+	dirName := fmt.Sprintf("%04d.%s", id, title)
+	return filepath.Join("solutions", dirName)
+}
 
+func saveSubmission(submission Submission, code string, index int) error {
+	// Extract problem ID from title slug (assuming format like "1-two-sum")
+	idStr := strings.Split(submission.TitleSlug, "-")[0]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return fmt.Errorf("failed to parse problem ID from slug %s: %w", submission.TitleSlug, err)
+	}
+
+	// Get the target directory
+	dir := getQuestionDirectory(id, submission.Title)
+
+	// Create directory if it doesn't exist
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", dir, err)
+	}
+
+	// Determine file extension
+	lang := strings.ToLower(submission.LangName)
 	ext := langExt[lang]
 	if ext == "" {
 		ext = "txt"
 	}
 
-	safeTitle := regexp.MustCompile(`[^a-zA-Z0-9-_ ]`).ReplaceAllString(submission.Title, "")
-	safeTitle = strings.ReplaceAll(strings.TrimSpace(safeTitle), " ", "_")
-	baseFilename := fmt.Sprintf("%s_%03d", safeTitle, index)
-	filePath := filepath.Join(outputDir, baseFilename+"."+ext)
+	// Create file path with index
+	filename := fmt.Sprintf("%03d.%s", index, ext)
+	filePath := filepath.Join(dir, filename)
 
+	// Create and write to file
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", filePath, err)
 	}
 	defer file.Close()
 
-	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "%s", code)
-
-	if _, err := io.Copy(file, &buf); err != nil {
+	if _, err := io.WriteString(file, code); err != nil {
 		return fmt.Errorf("failed to write to file %s: %w", filePath, err)
 	}
 
