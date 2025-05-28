@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/schollz/progressbar/v3"
@@ -15,11 +14,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
-
-	"github.com/machinebox/graphql"
 )
 
 const (
@@ -140,11 +136,10 @@ type SubmissionDetailsResponse struct {
 
 func main() {
 	// Add a flag for direct titleSlug input
-	//testSlug := flag.String("slug", "", "Directly fetch submissions for this titleSlug and exit")
-	//flag.Parse()
 	var testSlug *string = new(string)
+
 	// Load queries
-	problemsetQuery, submissionListQuery, _, err := loadQueries()
+	problemsetQuery, submissionListQuery, submissionDetailsQuery, err := loadQueries()
 	if err != nil {
 		log.Fatalf("Failed to load queries: %v", err)
 	}
@@ -166,56 +161,31 @@ func main() {
 
 	// If testSlug is provided, fetch and print submissions for that slug, then exit
 	if *testSlug != "" {
-		log.Printf("Testing fetchSubmissionListForProblem for titleSlug: %s", *testSlug)
-		submissions, err := fetchSubmissionListForProblem(httpClient, session, csrfToken, submissionListQuery, *testSlug)
-		if err != nil {
-			log.Fatalf("Failed to fetch submissions for %s: %v", *testSlug, err)
-		}
-		for _, submission := range submissions {
-			log.Printf("Submission ID: %d, Lang: %s, Status: %s, Timestamp: %s",
-				submission.ID, submission.Lang, submission.StatusDisplay, submission.Timestamp)
-		}
-		log.Printf("Fetched %d submissions for %s", len(submissions), *testSlug)
+		count := fetchSubmissionsForProblem(httpClient, *testSlug, *testSlug, session, csrfToken, submissionListQuery, submissionDetailsQuery)
+		log.Printf("Processed %d submissions for %s", count, *testSlug)
 		return
 	}
 
 	// Fetch solved problems
-	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, problemsetQuery, 3)
+	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, problemsetQuery, maxProblems)
 	if err != nil {
 		log.Fatalf("Failed to fetch submissions: %v", err)
 	}
 	if problems == nil || len(problems) == 0 {
 		log.Printf("No solved problems found for the user")
-		return // Exit gracefully or proceed to other tasks
+		return
 	}
 
-	// Process submissions (example, adjust based on your actual code)
+	// Process each problem's submissions
+	totalProcessed := 0
 	for _, problem := range problems {
 		log.Printf("Processing problem: %s (%s)", problem.Title, problem.TitleSlug)
-		submissions, err := fetchSubmissionListForProblem(httpClient, session, csrfToken, submissionListQuery, problem.TitleSlug)
-		if err != nil {
-			log.Printf("Failed to fetch submissions for %s: %v", problem.TitleSlug, err)
-			continue
-		}
-		// Process submissions (basic logging for now)
-		for _, submission := range submissions {
-			var timeStr string
-			timeInt, err := strconv.ParseInt(submission.Timestamp, 10, 64)
-			if err != nil {
-				log.Printf("Failed to parse timestamp %s: %v", submission.Timestamp, err)
-				timeStr = "unknown time"
-			} else {
-				timeStr = time.Unix(timeInt, 0).UTC().Format(time.RFC3339)
-			}
-			log.Printf("Submission ID: %s, Lang: %s, Status: %d, Timestamp: %s",
-				submission.ID, submission.Lang, submission.Status, timeStr)
-			// TODO: Fetch submission details with submissionDetailsQuery or save to file
-		}
+		count := fetchSubmissionsForProblem(httpClient, problem.TitleSlug, problem.Title, session, csrfToken, submissionListQuery, submissionDetailsQuery)
+		totalProcessed += count
 	}
 
-	log.Printf("Completed processing %d problems", len(problems))
+	log.Printf("Completed processing %d problems with %d total submissions", len(problems), totalProcessed)
 }
-
 func parseCookies() (string, string, error) {
 	data, err := os.ReadFile(cookieFile)
 	if err != nil {
@@ -470,34 +440,16 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 	log.Printf("Fetched %d solved problems", len(problems))
 	return problems, nil
 }
-func fetchSubmissionsForProblem(client *graphql.Client, questionSlug, problemTitle, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
-	offset := 0
-	totalSubmissions := 0
-	var lastKey *string
-	ctx := context.Background()
-
-	// Initial request to estimate total
-	var initResp SubmissionListResponse
-	initReq := graphql.NewRequest(submissionListQuery)
-	initReq.Var("offset", 0)
-	initReq.Var("limit", 1)
-	initReq.Var("questionSlug", questionSlug)
-	initReq.Var("status", 10)
-	initReq.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
-	initReq.Header.Set("X-CSRFToken", csrfToken)
-	initReq.Header.Set("Content-Type", "application/json")
-	initReq.Header.Set("Referer", "https://leetcode.com")
-	initReq.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-
-	if err := client.Run(ctx, initReq, &initResp); err != nil {
-		log.Printf("Failed to initialize submissions for %s: %v", questionSlug, err)
+func fetchSubmissionsForProblem(httpClient *http.Client, questionSlug, problemTitle, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
+	// Get the list of submissions
+	submissions, err := fetchSubmissionListForProblem(httpClient, session, csrfToken, submissionListQuery, questionSlug)
+	if err != nil {
+		log.Printf("Failed to fetch submission list for %s: %v", questionSlug, err)
 		return 0
 	}
 
-	total := 9999
-	if !initResp.SubmissionList.HasNext {
-		total = len(initResp.SubmissionList.Submissions)
-	}
+	total := len(submissions)
+	totalSubmissions := 0
 
 	bar := progressbar.NewOptions(total,
 		progressbar.OptionSetDescription(fmt.Sprintf("Fetching submissions for %s", problemTitle)),
@@ -505,84 +457,42 @@ func fetchSubmissionsForProblem(client *graphql.Client, questionSlug, problemTit
 		progressbar.OptionShowCount(),
 		progressbar.OptionShowIts())
 
-	for {
-		var resp SubmissionListResponse
-		req := graphql.NewRequest(submissionListQuery)
-		req.Var("offset", offset)
-		req.Var("limit", limitPerRequest)
-		if lastKey != nil {
-			req.Var("lastKey", *lastKey)
-		}
-		req.Var("questionSlug", questionSlug)
-		req.Var("status", 10)
-		req.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
-		req.Header.Set("X-CSRFToken", csrfToken)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Referer", "https://leetcode.com")
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-
-		if err := client.Run(ctx, req, &resp); err != nil {
-			log.Printf("Error at offset %d for %s: %v", offset, questionSlug, err)
-			bar.Finish()
-			break
+	for _, submission := range submissions {
+		code, err := getSubmissionDetails(httpClient, submission.ID, submissionDetailsQuery, session, csrfToken)
+		if err != nil {
+			log.Printf("Failed to fetch details for submission %s: %v", submission.ID, err)
+			code = "// Code not available"
 		}
 
-		submissions := resp.SubmissionList.Submissions
-		if len(submissions) == 0 {
-			bar.Finish()
-			break
+		if err := saveSubmission(submission, code); err != nil {
+			log.Printf("Failed to save submission %s: %v", submission.ID, err)
 		}
 
-		for _, submission := range submissions {
-			code, err := getSubmissionDetails(client, submission.ID, submissionDetailsQuery, session, csrfToken)
-			if err != nil {
-				log.Printf("Failed to fetch details for submission %s: %v", submission.ID, err)
-				code = "// Code not available"
-			}
-
-			if err := saveSubmission(submission, code); err != nil {
-				log.Printf("Failed to save submission %s: %v", submission.ID, err)
-			}
-
-			totalSubmissions++
-			bar.Add(1)
-			time.Sleep(500 * time.Millisecond)
-		}
-
-		if !resp.SubmissionList.HasNext {
-			bar.Finish()
-			break
-		}
-
-		if resp.SubmissionList.LastKey != "" {
-			lastKey = &resp.SubmissionList.LastKey
-		}
-		offset += limitPerRequest
-		time.Sleep(1 * time.Second)
+		totalSubmissions++
+		bar.Add(1)
+		time.Sleep(500 * time.Millisecond)
 	}
 
+	bar.Finish()
 	log.Printf("Total submissions fetched and saved for %s: %d", problemTitle, totalSubmissions)
 	return totalSubmissions
 }
+func getSubmissionDetails(httpClient *http.Client, submissionID, query, session, csrfToken string) (string, error) {
+	request := &GraphQLRequest{
+		Query: query,
+		Variables: map[string]interface{}{
+			"submissionId": submissionID,
+		},
+		OperationName: "submissionDetails",
+	}
 
-func getSubmissionDetails(client *graphql.Client, submissionID string, query, session, csrfToken string) (string, error) {
-	var resp SubmissionDetailsResponse
-	req := graphql.NewRequest(query)
-	req.Var("submissionId", submissionID)
-	req.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
-	req.Header.Set("X-CSRFToken", csrfToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Referer", "https://leetcode.com")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-
-	ctx := context.Background()
-	if err := client.Run(ctx, req, &resp); err != nil {
+	response, err := makeGraphQLRequest[SubmissionDetailsResponse](httpClient, session, csrfToken, request)
+	if err != nil {
 		return "", fmt.Errorf("failed to fetch submission details: %w", err)
 	}
 
-	return resp.Data.SubmissionDetails.Code, nil
+	return response.Data.SubmissionDetails.Code, nil
 }
-
 func saveSubmission(submission Submission, code string) error {
 	lang := strings.ToLower(submission.LangName)
 	timestamp, err := time.Parse("2006-01-02 15:04:05", submission.Timestamp)
