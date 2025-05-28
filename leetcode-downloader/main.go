@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/schollz/progressbar/v3"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -118,8 +119,8 @@ type SubmissionDetailsResponse struct {
 	Data struct {
 		SubmissionDetails struct {
 			Code       string `json:"code"`
-			Runtime    string `json:"runtime"`
-			Memory     string `json:"memory"`
+			Runtime    int    `json:"runtime"`
+			Memory     int    `json:"memory"`
 			StatusCode int    `json:"statusCode"`
 			Lang       struct {
 				Name        string `json:"name"`
@@ -129,14 +130,16 @@ type SubmissionDetailsResponse struct {
 				Title     string `json:"title"`
 				TitleSlug string `json:"titleSlug"`
 			} `json:"question"`
-			Timestamp string `json:"timestamp"`
+			Timestamp int `json:"timestamp"`
 		} `json:"submissionDetails"`
 	} `json:"data"`
 }
 
 func main() {
-	// Add a flag for direct titleSlug input
+	// Add flags for testing submission details
 	var testSlug *string = new(string)
+	var testSubmissionID *string = flag.String("submission", "", "Submission ID to fetch details for")
+	flag.Parse()
 
 	// Load queries
 	problemsetQuery, submissionListQuery, submissionDetailsQuery, err := loadQueries()
@@ -159,14 +162,24 @@ func main() {
 		Timeout:   30 * time.Second,
 	}
 
-	// If testSlug is provided, fetch and print submissions for that slug, then exit
+	// If testSubmissionID is provided, fetch and print submission details, then exit
+	if *testSubmissionID != "" {
+		code, err := getSubmissionDetails(httpClient, *testSubmissionID, submissionDetailsQuery, session, csrfToken)
+		if err != nil {
+			log.Fatalf("Failed to fetch submission details: %v", err)
+		}
+		log.Printf("Code for submission %s:\n%s", *testSubmissionID, code)
+		return
+	}
+
+	// Rest of the main function remains the same...
 	if *testSlug != "" {
 		count := fetchSubmissionsForProblem(httpClient, *testSlug, *testSlug, session, csrfToken, submissionListQuery, submissionDetailsQuery)
 		log.Printf("Processed %d submissions for %s", count, *testSlug)
 		return
 	}
 
-	// Fetch solved problems
+	// Existing problem fetching code...
 	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, problemsetQuery, maxProblems)
 	if err != nil {
 		log.Fatalf("Failed to fetch submissions: %v", err)
@@ -176,7 +189,6 @@ func main() {
 		return
 	}
 
-	// Process each problem's submissions
 	totalProcessed := 0
 	for _, problem := range problems {
 		log.Printf("Processing problem: %s (%s)", problem.Title, problem.TitleSlug)
@@ -485,7 +497,7 @@ func getSubmissionDetails(httpClient *http.Client, submissionID, query, session,
 		},
 		OperationName: "submissionDetails",
 	}
-
+	//1627257755
 	response, err := makeGraphQLRequest[SubmissionDetailsResponse](httpClient, session, csrfToken, request)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch submission details: %w", err)
