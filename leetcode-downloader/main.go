@@ -8,6 +8,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	_ "github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
+	"gopkg.in/yaml.v3"
 	"io"
 	"log"
 	"net/http"
@@ -134,25 +135,25 @@ type SubmissionDetailsResponse struct {
 	} `json:"data"`
 }
 type DebugConfig struct {
-	TestSlug         string `json:"testSlug"`
-	TestSubmissionID string `json:"testSubmissionId"`
+    TestSlug        string `yaml:"testSlug"`
+    TestSubmissionID string `yaml:"testSubmissionId"`
 }
 
 func loadDebugConfig() (*DebugConfig, error) {
-	data, err := os.ReadFile("debug.json")
-	if err != nil {
-		if os.IsNotExist(err) {
-			return &DebugConfig{}, nil // Return empty config if file doesn't exist
-		}
-		return nil, fmt.Errorf("failed to read debug config: %w", err)
-	}
+    data, err := os.ReadFile("debug.yaml")
+    if err != nil {
+        if os.IsNotExist(err) {
+            return &DebugConfig{}, nil // Return empty config if file doesn't exist
+        }
+        return nil, fmt.Errorf("failed to read debug config: %w", err)
+    }
 
-	var config DebugConfig
-	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("failed to parse debug config: %w", err)
-	}
+    var config DebugConfig
+    if err := yaml.Unmarshal(data, &config); err != nil {
+        return nil, fmt.Errorf("failed to parse debug config: %w", err)
+    }
 
-	return &config, nil
+    return &config, nil
 }
 func handleDebugMode(httpClient *http.Client, submissionListQuery, submissionDetailsQuery, session, csrfToken string) bool {
 	// Load debug config

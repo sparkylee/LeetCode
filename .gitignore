@@ -3,3 +3,4 @@ target/*
 .idea
 *cookies.txt
 debug.json
+debug.yaml
