@@ -1,0 +1,80 @@
+query problemsetQuestionListV2($filters: QuestionFilterInput, $limit: Int, $searchKeyword: String, $skip: Int, $sortBy: QuestionSortByInput, $categorySlug: String) {
+  problemsetQuestionListV2(
+    filters: $filters
+    limit: $limit
+    searchKeyword: $searchKeyword
+    skip: $skip
+    sortBy: $sortBy
+    categorySlug: $categorySlug
+  ) {
+    questions {
+      id
+      titleSlug
+      title
+      translatedTitle
+      questionFrontendId
+      paidOnly
+      difficulty
+      topicTags {
+        name
+        slug
+        nameTranslated
+      }
+      status
+      isInMyFavorites
+      frequency
+      acRate
+    }
+    totalLength
+    finishedLength
+    hasMore
+  }
+}
+
+query submissionList($offset: Int!, $limit: Int!, $lastKey: String, $questionSlug: String!, $lang: Int, $status: Int) {
+  questionSubmissionList(
+    offset: $offset
+    limit: $limit
+    lastKey: $lastKey
+    questionSlug: $questionSlug
+    lang: $lang
+    status: $status
+  ) {
+    lastKey
+    hasNext
+    submissions {
+      id
+      title
+      titleSlug
+      status
+      statusDisplay
+      lang
+      langName
+      runtime
+      timestamp
+      url
+      isPending
+      memory
+      hasNotes
+      notes
+    }
+  }
+}
+
+query submissionDetails($submissionId: Int!) {
+  submissionDetails(submissionId: $submissionId) {
+    code
+    runtime
+    memory
+    statusCode
+    lang {
+      name
+      verboseName
+    }
+    question {
+      title
+      titleSlug
+    }
+    timestamp
+  }
+}
