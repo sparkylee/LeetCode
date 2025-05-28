@@ -135,25 +135,25 @@ type SubmissionDetailsResponse struct {
 	} `json:"data"`
 }
 type DebugConfig struct {
-    TestSlug        string `yaml:"testSlug"`
-    TestSubmissionID string `yaml:"testSubmissionId"`
+	TestSlug         string `yaml:"testSlug"`
+	TestSubmissionID string `yaml:"testSubmissionId"`
 }
 
 func loadDebugConfig() (*DebugConfig, error) {
-    data, err := os.ReadFile("debug.yaml")
-    if err != nil {
-        if os.IsNotExist(err) {
-            return &DebugConfig{}, nil // Return empty config if file doesn't exist
-        }
-        return nil, fmt.Errorf("failed to read debug config: %w", err)
-    }
+	data, err := os.ReadFile("debug.yaml")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return &DebugConfig{}, nil // Return empty config if file doesn't exist
+		}
+		return nil, fmt.Errorf("failed to read debug config: %w", err)
+	}
 
-    var config DebugConfig
-    if err := yaml.Unmarshal(data, &config); err != nil {
-        return nil, fmt.Errorf("failed to parse debug config: %w", err)
-    }
+	var config DebugConfig
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("failed to parse debug config: %w", err)
+	}
 
-    return &config, nil
+	return &config, nil
 }
 func handleDebugMode(httpClient *http.Client, submissionListQuery, submissionDetailsQuery, session, csrfToken string) bool {
 	// Load debug config
@@ -566,12 +566,12 @@ func saveSubmission(submission Submission, code string) error {
 	defer file.Close()
 
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "// Problem: %s\n", submission.Title)
-	fmt.Fprintf(&buf, "// Language: %s\n", lang)
-	fmt.Fprintf(&buf, "// Timestamp: %s\n", timestamp)
-	fmt.Fprintf(&buf, "// ID: %s\n", submission.ID)
-	fmt.Fprintf(&buf, "// Runtime: %s\n", submission.Runtime)
-	fmt.Fprintf(&buf, "// Memory: %s\n\n", submission.Memory)
+	//fmt.Fprintf(&buf, "// Problem: %s\n", submission.Title)
+	//fmt.Fprintf(&buf, "// Language: %s\n", lang)
+	//fmt.Fprintf(&buf, "// Timestamp: %s\n", timestamp)
+	//fmt.Fprintf(&buf, "// ID: %s\n", submission.ID)
+	//fmt.Fprintf(&buf, "// Runtime: %s\n", submission.Runtime)
+	//fmt.Fprintf(&buf, "// Memory: %s\n\n", submission.Memory)
 	fmt.Fprintf(&buf, "%s", code)
 
 	if _, err := io.Copy(file, &buf); err != nil {
