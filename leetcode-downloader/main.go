@@ -500,14 +500,14 @@ func fetchSubmissionsForProblem(httpClient *http.Client, questionSlug, problemTi
 		progressbar.OptionShowCount(),
 		progressbar.OptionShowIts())
 
-	for _, submission := range submissions {
+	for i, submission := range submissions {
 		code, err := getSubmissionDetails(httpClient, submission.ID, submissionDetailsQuery, session, csrfToken)
 		if err != nil {
 			log.Printf("Failed to fetch details for submission %s: %v", submission.ID, err)
 			code = "// Code not available"
 		}
 
-		if err := saveSubmission(submission, code); err != nil {
+		if err := saveSubmission(submission, code, i); err != nil {
 			log.Printf("Failed to save submission %s: %v", submission.ID, err)
 		}
 
@@ -520,6 +520,7 @@ func fetchSubmissionsForProblem(httpClient *http.Client, questionSlug, problemTi
 	log.Printf("Total submissions fetched and saved for %s: %d", problemTitle, totalSubmissions)
 	return totalSubmissions
 }
+
 func getSubmissionDetails(httpClient *http.Client, submissionID, query, session, csrfToken string) (string, error) {
 	request := &GraphQLRequest{
 		Query: query,
@@ -536,12 +537,8 @@ func getSubmissionDetails(httpClient *http.Client, submissionID, query, session,
 
 	return response.Data.SubmissionDetails.Code, nil
 }
-func saveSubmission(submission Submission, code string) error {
+func saveSubmission(submission Submission, code string, index int) error {
 	lang := strings.ToLower(submission.LangName)
-	timestamp, err := time.Parse("2006-01-02 15:04:05", submission.Timestamp)
-	if err != nil {
-		timestamp = time.Now()
-	}
 
 	ext := langExt[lang]
 	if ext == "" {
@@ -550,14 +547,8 @@ func saveSubmission(submission Submission, code string) error {
 
 	safeTitle := regexp.MustCompile(`[^a-zA-Z0-9-_ ]`).ReplaceAllString(submission.Title, "")
 	safeTitle = strings.ReplaceAll(strings.TrimSpace(safeTitle), " ", "_")
-	baseFilename := fmt.Sprintf("%s_%s", safeTitle, timestamp.Format("20060102_150405"))
+	baseFilename := fmt.Sprintf("%s_%03d", safeTitle, index)
 	filePath := filepath.Join(outputDir, baseFilename+"."+ext)
-
-	counter := 1
-	for _, err := os.Stat(filePath); err == nil; _, err = os.Stat(filePath) {
-		filePath = filepath.Join(outputDir, fmt.Sprintf("%s_%d.%s", baseFilename, counter, ext))
-		counter++
-	}
 
 	file, err := os.Create(filePath)
 	if err != nil {
@@ -566,12 +557,6 @@ func saveSubmission(submission Submission, code string) error {
 	defer file.Close()
 
 	var buf bytes.Buffer
-	//fmt.Fprintf(&buf, "// Problem: %s\n", submission.Title)
-	//fmt.Fprintf(&buf, "// Language: %s\n", lang)
-	//fmt.Fprintf(&buf, "// Timestamp: %s\n", timestamp)
-	//fmt.Fprintf(&buf, "// ID: %s\n", submission.ID)
-	//fmt.Fprintf(&buf, "// Runtime: %s\n", submission.Runtime)
-	//fmt.Fprintf(&buf, "// Memory: %s\n\n", submission.Memory)
 	fmt.Fprintf(&buf, "%s", code)
 
 	if _, err := io.Copy(file, &buf); err != nil {
