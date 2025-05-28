@@ -28,6 +28,7 @@ const (
 	maxProblems     = 3
 )
 
+var debugLog = log.New(io.Discard, "[DEBUG] ", log.LstdFlags)
 var (
 	langExt = map[string]string{
 		"cpp":        "cpp",
@@ -138,6 +139,7 @@ type SubmissionDetailsResponse struct {
 type DebugConfig struct {
 	TestSlug         string `yaml:"testSlug"`
 	TestSubmissionID string `yaml:"testSubmissionId"`
+	Debug            bool   `yaml:"debug"`
 }
 
 func loadDebugConfig() (*DebugConfig, error) {
@@ -156,12 +158,8 @@ func loadDebugConfig() (*DebugConfig, error) {
 
 	return &config, nil
 }
-func handleDebugMode(httpClient *http.Client, submissionListQuery, submissionDetailsQuery, session, csrfToken string) bool {
+func handleDebugMode(debugConfig *DebugConfig, httpClient *http.Client, submissionListQuery, submissionDetailsQuery, session, csrfToken string) bool {
 	// Load debug config
-	debugConfig, err := loadDebugConfig()
-	if err != nil {
-		log.Fatalf("Failed to load debug config: %v", err)
-	}
 	if debugConfig == nil {
 		log.Println("No debug config found, running in normal mode")
 		return false
@@ -184,8 +182,20 @@ func handleDebugMode(httpClient *http.Client, submissionListQuery, submissionDet
 	}
 	return false
 }
+func initDebugLogger(config *DebugConfig) {
+	if config != nil && config.Debug {
+		debugLog = log.New(os.Stdout, "[DEBUG] ", log.LstdFlags)
+	} else {
+		debugLog = log.New(io.Discard, "[DEBUG] ", log.LstdFlags)
+	}
+}
 func main() {
 	// Load queries
+	debugConfig, err := loadDebugConfig()
+	if err != nil {
+		log.Fatalf("Failed to load debug config: %v", err)
+	}
+	initDebugLogger(debugConfig)
 	problemsetQuery, submissionListQuery, submissionDetailsQuery, err := loadQueries()
 	if err != nil {
 		log.Fatalf("Failed to load queries: %v", err)
@@ -207,7 +217,7 @@ func main() {
 	}
 
 	// Handle debug mode if enabled
-	if handleDebugMode(httpClient, submissionListQuery, submissionDetailsQuery, session, csrfToken) {
+	if handleDebugMode(debugConfig, httpClient, submissionListQuery, submissionDetailsQuery, session, csrfToken) {
 		return
 	}
 
@@ -332,7 +342,7 @@ func makeGraphQLRequest[T any](httpClient *http.Client, session, csrfToken strin
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %v", err)
 	}
-	log.Printf("Request body: %s", string(bodyBytes))
+	debugLog.Printf("Request body: %s", string(bodyBytes))
 
 	req, err := http.NewRequest("POST", "https://leetcode.com/graphql", bytes.NewBuffer(bodyBytes))
 	if err != nil {
@@ -356,7 +366,7 @@ func makeGraphQLRequest[T any](httpClient *http.Client, session, csrfToken strin
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
-	log.Printf("Response body: %s", string(bodyBytes))
+	debugLog.Printf("Response body: %s", string(bodyBytes))
 
 	// Create a new reader with the bytes for decoding the JSON
 	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
