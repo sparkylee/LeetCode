@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"github.com/schollz/progressbar/v3"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -134,13 +133,56 @@ type SubmissionDetailsResponse struct {
 		} `json:"submissionDetails"`
 	} `json:"data"`
 }
+type DebugConfig struct {
+	TestSlug         string `json:"testSlug"`
+	TestSubmissionID string `json:"testSubmissionId"`
+}
 
+func loadDebugConfig() (*DebugConfig, error) {
+	data, err := os.ReadFile("debug.json")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return &DebugConfig{}, nil // Return empty config if file doesn't exist
+		}
+		return nil, fmt.Errorf("failed to read debug config: %w", err)
+	}
+
+	var config DebugConfig
+	if err := json.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("failed to parse debug config: %w", err)
+	}
+
+	return &config, nil
+}
+func handleDebugMode(httpClient *http.Client, submissionListQuery, submissionDetailsQuery, session, csrfToken string) bool {
+	// Load debug config
+	debugConfig, err := loadDebugConfig()
+	if err != nil {
+		log.Fatalf("Failed to load debug config: %v", err)
+	}
+	if debugConfig == nil {
+		log.Println("No debug config found, running in normal mode")
+		return false
+	}
+	// If testSubmissionID is provided, fetch and print submission details
+	if debugConfig.TestSubmissionID != "" {
+		code, err := getSubmissionDetails(httpClient, debugConfig.TestSubmissionID, submissionDetailsQuery, session, csrfToken)
+		if err != nil {
+			log.Fatalf("Failed to fetch submission details: %v", err)
+		}
+		log.Printf("Code for submission %s:\n%s", debugConfig.TestSubmissionID, code)
+		return true
+	}
+
+	// If testSlug is provided, fetch submissions for that problem
+	if debugConfig.TestSlug != "" {
+		count := fetchSubmissionsForProblem(httpClient, debugConfig.TestSlug, debugConfig.TestSlug, session, csrfToken, submissionListQuery, submissionDetailsQuery)
+		log.Printf("Processed %d submissions for %s", count, debugConfig.TestSlug)
+		return true
+	}
+	return false
+}
 func main() {
-	// Add flags for testing submission details
-	var testSlug *string = new(string)
-	var testSubmissionID *string = flag.String("submission", "", "Submission ID to fetch details for")
-	flag.Parse()
-
 	// Load queries
 	problemsetQuery, submissionListQuery, submissionDetailsQuery, err := loadQueries()
 	if err != nil {
@@ -162,24 +204,12 @@ func main() {
 		Timeout:   30 * time.Second,
 	}
 
-	// If testSubmissionID is provided, fetch and print submission details, then exit
-	if *testSubmissionID != "" {
-		code, err := getSubmissionDetails(httpClient, *testSubmissionID, submissionDetailsQuery, session, csrfToken)
-		if err != nil {
-			log.Fatalf("Failed to fetch submission details: %v", err)
-		}
-		log.Printf("Code for submission %s:\n%s", *testSubmissionID, code)
+	// Handle debug mode if enabled
+	if handleDebugMode(httpClient, submissionListQuery, submissionDetailsQuery, session, csrfToken) {
 		return
 	}
 
-	// Rest of the main function remains the same...
-	if *testSlug != "" {
-		count := fetchSubmissionsForProblem(httpClient, *testSlug, *testSlug, session, csrfToken, submissionListQuery, submissionDetailsQuery)
-		log.Printf("Processed %d submissions for %s", count, *testSlug)
-		return
-	}
-
-	// Existing problem fetching code...
+	// Normal operation mode
 	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, problemsetQuery, maxProblems)
 	if err != nil {
 		log.Fatalf("Failed to fetch submissions: %v", err)
