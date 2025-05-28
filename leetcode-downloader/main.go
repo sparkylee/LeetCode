@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"github.com/schollz/progressbar/v3"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -16,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,7 +26,7 @@ const (
 	outputDir       = "leetcode_submissions"
 	limitPerRequest = 20
 	queryFile       = "query.graphql"
-	cookieFile      = "leetcode.com_cookies"
+	cookieFile      = "leetcode.com_cookies.txt"
 	defaultTimeout  = 10 * time.Second
 	maxProblems     = 3
 )
@@ -140,9 +140,9 @@ type SubmissionDetailsResponse struct {
 
 func main() {
 	// Add a flag for direct titleSlug input
-	testSlug := flag.String("slug", "", "Directly fetch submissions for this titleSlug and exit")
-	flag.Parse()
-
+	//testSlug := flag.String("slug", "", "Directly fetch submissions for this titleSlug and exit")
+	//flag.Parse()
+	var testSlug *string = new(string)
 	// Load queries
 	problemsetQuery, submissionListQuery, _, err := loadQueries()
 	if err != nil {
@@ -180,7 +180,7 @@ func main() {
 	}
 
 	// Fetch solved problems
-	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, problemsetQuery)
+	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, problemsetQuery, 3)
 	if err != nil {
 		log.Fatalf("Failed to fetch submissions: %v", err)
 	}
@@ -199,8 +199,16 @@ func main() {
 		}
 		// Process submissions (basic logging for now)
 		for _, submission := range submissions {
-			log.Printf("Submission ID: %d, Lang: %s, Status: %s, Timestamp: %d",
-				submission.ID, submission.Lang, submission.Status, submission.Timestamp)
+			var timeStr string
+			timeInt, err := strconv.ParseInt(submission.Timestamp, 10, 64)
+			if err != nil {
+				log.Printf("Failed to parse timestamp %s: %v", submission.Timestamp, err)
+				timeStr = "unknown time"
+			} else {
+				timeStr = time.Unix(timeInt, 0).UTC().Format(time.RFC3339)
+			}
+			log.Printf("Submission ID: %s, Lang: %s, Status: %d, Timestamp: %s",
+				submission.ID, submission.Lang, submission.Status, timeStr)
 			// TODO: Fetch submission details with submissionDetailsQuery or save to file
 		}
 	}
@@ -393,7 +401,7 @@ func fetchSubmissionListForProblem(httpClient *http.Client, session, csrfToken, 
 	return submissions, nil
 }
 
-func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, problemsetQuery string) ([]Problem, error) {
+func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, problemsetQuery string, maxCount int) ([]Problem, error) {
 	var problems []Problem
 	limit := limitPerRequest
 	skip := 0
@@ -447,6 +455,12 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 
 		problems = append(problems, response.Data.ProblemsetQuestionListV2.Questions...)
 
+		// Stop if we've reached or exceeded maxCount (when maxCount > 0)
+		if maxCount > 0 && len(problems) >= maxCount {
+			problems = problems[:maxCount] // Trim to exact maxCount
+			break
+		}
+
 		if !response.Data.ProblemsetQuestionListV2.HasMore || len(response.Data.ProblemsetQuestionListV2.Questions) == 0 {
 			break
 		}
@@ -456,7 +470,6 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 	log.Printf("Fetched %d solved problems", len(problems))
 	return problems, nil
 }
-
 func fetchSubmissionsForProblem(client *graphql.Client, questionSlug, problemTitle, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
 	offset := 0
 	totalSubmissions := 0
