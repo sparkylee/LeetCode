@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -175,11 +174,11 @@ func handleDebugMode(debugConfig *DebugConfig, httpClient *http.Client, submissi
 	}
 
 	// If testSlug is provided, fetch submissions for that problem
-	if debugConfig.TestSlug != "" {
-		count := fetchSubmissionsForProblem(httpClient, debugConfig.TestSlug, debugConfig.TestSlug, session, csrfToken, submissionListQuery, submissionDetailsQuery)
-		log.Printf("Processed %d submissions for %s", count, debugConfig.TestSlug)
-		return true
-	}
+	//if debugConfig.TestSlug != "" {
+	//	count := fetchSubmissionsForProblem(httpClient, debugConfig.TestSlug, debugConfig.TestSlug, session, csrfToken, submissionListQuery, submissionDetailsQuery)
+	//	log.Printf("Processed %d submissions for %s", count, debugConfig.TestSlug)
+	//	return true
+	//}
 	return false
 }
 func initDebugLogger(config *DebugConfig) {
@@ -233,8 +232,15 @@ func main() {
 
 	totalProcessed := 0
 	for _, problem := range problems {
+		// Create directory for the problem
+		dir := getQuestionDirectory(problem.ID, problem.Title)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			log.Printf("Failed to create directory for problem %s: %v", problem.Title, err)
+			continue
+		}
+
 		log.Printf("Processing problem: %s (%s)", problem.Title, problem.TitleSlug)
-		count := fetchSubmissionsForProblem(httpClient, problem.TitleSlug, problem.Title, session, csrfToken, submissionListQuery, submissionDetailsQuery)
+		count := fetchSubmissionsForProblem(httpClient, problem, session, csrfToken, submissionListQuery, submissionDetailsQuery)
 		totalProcessed += count
 	}
 
@@ -494,11 +500,11 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 	log.Printf("Fetched %d solved problems", len(problems))
 	return problems, nil
 }
-func fetchSubmissionsForProblem(httpClient *http.Client, questionSlug, problemTitle, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
+func fetchSubmissionsForProblem(httpClient *http.Client, problem Problem, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
 	// Get the list of submissions
-	submissions, err := fetchSubmissionListForProblem(httpClient, session, csrfToken, submissionListQuery, questionSlug)
+	submissions, err := fetchSubmissionListForProblem(httpClient, session, csrfToken, submissionListQuery, problem.TitleSlug)
 	if err != nil {
-		log.Printf("Failed to fetch submission list for %s: %v", questionSlug, err)
+		log.Printf("Failed to fetch submission list for %s: %v", problem.TitleSlug, err)
 		return 0
 	}
 
@@ -506,7 +512,7 @@ func fetchSubmissionsForProblem(httpClient *http.Client, questionSlug, problemTi
 	totalSubmissions := 0
 
 	bar := progressbar.NewOptions(total,
-		progressbar.OptionSetDescription(fmt.Sprintf("Fetching submissions for %s", problemTitle)),
+		progressbar.OptionSetDescription(fmt.Sprintf("Fetching submissions for %s", problem.Title)),
 		progressbar.OptionSetItsString("submission"),
 		progressbar.OptionShowCount(),
 		progressbar.OptionShowIts())
@@ -518,7 +524,7 @@ func fetchSubmissionsForProblem(httpClient *http.Client, questionSlug, problemTi
 			code = "// Code not available"
 		}
 
-		if err := saveSubmission(submission, code, i); err != nil {
+		if err := saveSubmission(submission, code, i, problem); err != nil {
 			log.Printf("Failed to save submission %s: %v", submission.ID, err)
 		}
 
@@ -528,7 +534,7 @@ func fetchSubmissionsForProblem(httpClient *http.Client, questionSlug, problemTi
 	}
 
 	bar.Finish()
-	log.Printf("Total submissions fetched and saved for %s: %d", problemTitle, totalSubmissions)
+	log.Printf("Total submissions fetched and saved for %s: %d", problem.Title, totalSubmissions)
 	return totalSubmissions
 }
 
@@ -550,25 +556,13 @@ func getSubmissionDetails(httpClient *http.Client, submissionID, query, session,
 }
 func getQuestionDirectory(id int, title string) string {
 	// Format: "0001.Title"
-	dirName := fmt.Sprintf("%04d.%s", id, title)
+	dirName := fmt.Sprintf("%04d. %s", id, title)
 	return filepath.Join("solutions", dirName)
 }
 
-func saveSubmission(submission Submission, code string, index int) error {
-	// Extract problem ID from title slug (assuming format like "1-two-sum")
-	idStr := strings.Split(submission.TitleSlug, "-")[0]
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		return fmt.Errorf("failed to parse problem ID from slug %s: %w", submission.TitleSlug, err)
-	}
-
-	// Get the target directory
-	dir := getQuestionDirectory(id, submission.Title)
-
-	// Create directory if it doesn't exist
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return fmt.Errorf("failed to create directory %s: %w", dir, err)
-	}
+func saveSubmission(submission Submission, code string, index int, problem Problem) error {
+	// Get the target directory using problem ID
+	dir := getQuestionDirectory(problem.ID, problem.Title)
 
 	// Determine file extension
 	lang := strings.ToLower(submission.LangName)
