@@ -1,0 +1,43 @@
+class Solution {
+   int[][] oe = new int[2][26];
+
+    private void reset() {
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 26; i++) {
+                oe[j][i] = 0;
+            }
+        }
+    }
+
+    private String calcSESignature(String str) {
+        StringBuilder sb = new StringBuilder();
+        reset();
+        for (int i = 0; i < str.length(); i += 2) {
+            char c = str.charAt(i);
+            oe[0][c - 'a']++;
+        }
+        for (int i = 1; i < str.length(); i += 2) {
+            char c = str.charAt(i);
+            oe[1][c - 'a']++;
+        }
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 26; i++) {
+                if (oe[j][i] == 0) continue;
+                sb.append('a' + i);
+                if (oe[j][i] > 1)
+                    sb.append(oe[j][i] + 'A');
+            }
+            sb.append('&');
+        }
+        return sb.toString();
+    }
+
+    public int numSpecialEquivGroups(String[] A) {
+        Set<String> set = new HashSet<>();
+        for (int i = 0; i < A.length; i++) {
+            String str = calcSESignature(A[i]);
+            set.add(str);
+        }
+        return set.size();
+    }
+}

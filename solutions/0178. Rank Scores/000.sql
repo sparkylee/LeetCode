@@ -1,0 +1,2 @@
+# Write your MySQL query statement below
+select Scores.Score,ScoreSorted.Rank from Scores join (select  Score,CAST((@row := @row + 1) AS UNSIGNED ) AS Rank from (select distinct Score from Scores) Scores , (SELECT @row := 0) r order by Score desc) ScoreSorted on Scores.Score = ScoreSorted.Score order by ScoreSorted.Rank 
