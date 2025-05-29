@@ -19,14 +19,17 @@ import (
 )
 
 const (
-	outputDir       = "leetcode_submissions"
 	limitPerRequest = 20
 	queryFile       = "query.graphql"
 	cookieFile      = "leetcode.com_cookies.txt"
-	defaultTimeout  = 10 * time.Second
 	maxProblems     = 3
 )
 
+var (
+	problemsetQuery        string
+	submissionListQuery    string
+	submissionDetailsQuery string
+)
 var debugLog = log.New(io.Discard, "[DEBUG] ", log.LstdFlags)
 var (
 	langExt = map[string]string{
@@ -58,11 +61,6 @@ var (
 	}
 )
 
-type Config struct {
-	LeetcodeSession string `json:"LEETCODE_SESSION"`
-	CsrfToken       string `json:"csrftoken"`
-}
-
 type Problem struct {
 	ID                 int    `json:"id"` // Changed from string to int
 	TitleSlug          string `json:"titleSlug"`
@@ -82,15 +80,6 @@ type Problem struct {
 	AcRate          float64 `json:"acRate"`
 }
 
-type ProblemsetResponse struct {
-	ProblemsetQuestionListV2 struct {
-		Questions      []Problem `json:"questions"`
-		TotalLength    int       `json:"totalLength"`
-		FinishedLength int       `json:"finishedLength"`
-		HasMore        bool      `json:"hasMore"`
-	} `json:"problemsetQuestionListV2"`
-}
-
 type Submission struct {
 	ID            string `json:"id"`
 	Title         string `json:"title"`
@@ -106,14 +95,6 @@ type Submission struct {
 	Memory        string `json:"memory"`
 	HasNotes      bool   `json:"hasNotes"`
 	Notes         string `json:"notes"`
-}
-
-type SubmissionListResponse struct {
-	SubmissionList struct {
-		Submissions []Submission `json:"submissions"`
-		HasNext     bool         `json:"hasNext"`
-		LastKey     string       `json:"lastKey"` // Added back
-	} `json:"submissionList"`
 }
 
 type SubmissionDetailsResponse struct {
@@ -157,7 +138,7 @@ func loadDebugConfig() (*DebugConfig, error) {
 
 	return &config, nil
 }
-func handleDebugMode(debugConfig *DebugConfig, httpClient *http.Client, submissionListQuery, submissionDetailsQuery, session, csrfToken string) bool {
+func handleDebugMode(debugConfig *DebugConfig, httpClient *http.Client, session, csrfToken string) bool {
 	// Load debug config
 	if debugConfig == nil {
 		log.Println("No debug config found, running in normal mode")
@@ -195,8 +176,7 @@ func main() {
 		log.Fatalf("Failed to load debug config: %v", err)
 	}
 	initDebugLogger(debugConfig)
-	problemsetQuery, submissionListQuery, submissionDetailsQuery, err := loadQueries()
-	if err != nil {
+	if err := loadQueries(); err != nil {
 		log.Fatalf("Failed to load queries: %v", err)
 	}
 
@@ -216,19 +196,19 @@ func main() {
 	}
 
 	// Handle debug mode if enabled
-	if handleDebugMode(debugConfig, httpClient, submissionListQuery, submissionDetailsQuery, session, csrfToken) {
+	if handleDebugMode(debugConfig, httpClient, session, csrfToken) {
 		return
 	}
 
 	// Fetch and process problems
-	if err := processSolvedProblems(httpClient, session, csrfToken, problemsetQuery, submissionListQuery, submissionDetailsQuery); err != nil {
+	if err := processSolvedProblems(httpClient, session, csrfToken); err != nil {
 		log.Fatalf("Failed to process problems: %v", err)
 	}
 }
 
-func processSolvedProblems(httpClient *http.Client, session, csrfToken, problemsetQuery, submissionListQuery, submissionDetailsQuery string) error {
+func processSolvedProblems(httpClient *http.Client, session, csrfToken string) error {
 	// Fetch problems
-	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, problemsetQuery, maxProblems)
+	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, maxProblems)
 	if err != nil {
 		return fmt.Errorf("failed to fetch submissions: %w", err)
 	}
@@ -237,12 +217,12 @@ func processSolvedProblems(httpClient *http.Client, session, csrfToken, problems
 		return nil
 	}
 
-	totalProcessed := processProblems(httpClient, problems, session, csrfToken, submissionListQuery, submissionDetailsQuery)
+	totalProcessed := processProblems(httpClient, problems, session, csrfToken)
 	log.Printf("Completed processing %d problems with %d total submissions", len(problems), totalProcessed)
 	return nil
 }
 
-func processProblems(httpClient *http.Client, problems []Problem, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
+func processProblems(httpClient *http.Client, problems []Problem, session, csrfToken string) int {
 	totalProcessed := 0
 	for _, problem := range problems {
 		// Create directory for the problem
@@ -253,7 +233,7 @@ func processProblems(httpClient *http.Client, problems []Problem, session, csrfT
 		}
 
 		log.Printf("Processing problem: %s (%s)", problem.Title, problem.TitleSlug)
-		count := fetchSubmissionsForProblem(httpClient, problem, session, csrfToken, submissionListQuery, submissionDetailsQuery)
+		count := fetchSubmissionsForProblem(httpClient, problem, session, csrfToken)
 		totalProcessed += count
 	}
 	return totalProcessed
@@ -295,7 +275,15 @@ func parseCookies() (string, string, error) {
 
 	return session, csrfToken, nil
 }
-func loadQueries() (string, string, string, error) {
+func loadQueries() error {
+	var err error
+	problemsetQuery, submissionListQuery, submissionDetailsQuery, err = parseQueries()
+	if err != nil {
+		return fmt.Errorf("failed to load queries: %w", err)
+	}
+	return nil
+}
+func parseQueries() (string, string, string, error) {
 	data, err := os.ReadFile(queryFile)
 	if err != nil {
 		return "", "", "", fmt.Errorf("query.graphql not found: %w", err)
@@ -397,7 +385,7 @@ func makeGraphQLRequest[T any](httpClient *http.Client, session, csrfToken strin
 	return &response, nil
 }
 
-func fetchSubmissionListForProblem(httpClient *http.Client, session, csrfToken, submissionListQuery, titleSlug string) ([]Submission, error) {
+func fetchSubmissionListForProblem(httpClient *http.Client, session, csrfToken, titleSlug string) ([]Submission, error) {
 	var submissions []Submission
 	limit := limitPerRequest
 	offset := 0
@@ -443,7 +431,7 @@ func fetchSubmissionListForProblem(httpClient *http.Client, session, csrfToken, 
 	return submissions, nil
 }
 
-func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, problemsetQuery string, maxCount int) ([]Problem, error) {
+func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, maxCount int) ([]Problem, error) {
 	var problems []Problem
 	limit := limitPerRequest
 	skip := 0
@@ -512,18 +500,18 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 	log.Printf("Fetched %d solved problems", len(problems))
 	return problems, nil
 }
-func fetchSubmissionsForProblem(httpClient *http.Client, problem Problem, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
+
+func fetchSubmissionsForProblem(httpClient *http.Client, problem Problem, session, csrfToken string) int {
 	// Get the list of submissions
-	submissions, err := fetchSubmissionListForProblem(httpClient, session, csrfToken, submissionListQuery, problem.TitleSlug)
+	submissions, err := fetchSubmissionListForProblem(httpClient, session, csrfToken, problem.TitleSlug)
 	if err != nil {
 		log.Printf("Failed to fetch submission list for %s: %v", problem.TitleSlug, err)
 		return 0
 	}
-
-	return processSubmissions(httpClient, submissions, problem, session, csrfToken, submissionDetailsQuery)
+	return processSubmissions(httpClient, submissions, problem, session, csrfToken)
 }
 
-func processSubmissions(httpClient *http.Client, submissions []Submission, problem Problem, session, csrfToken, submissionDetailsQuery string) int {
+func processSubmissions(httpClient *http.Client, submissions []Submission, problem Problem, session, csrfToken string) int {
 	total := len(submissions)
 	totalSubmissions := 0
 
@@ -534,7 +522,7 @@ func processSubmissions(httpClient *http.Client, submissions []Submission, probl
 		progressbar.OptionShowIts())
 
 	for i, submission := range submissions {
-		if processSubmission(httpClient, submission, problem, i, session, csrfToken, submissionDetailsQuery) {
+		if processSubmission(httpClient, submission, problem, i, session, csrfToken) {
 			totalSubmissions++
 		}
 		bar.Add(1)
@@ -546,7 +534,7 @@ func processSubmissions(httpClient *http.Client, submissions []Submission, probl
 	return totalSubmissions
 }
 
-func processSubmission(httpClient *http.Client, submission Submission, problem Problem, index int, session, csrfToken, submissionDetailsQuery string) bool {
+func processSubmission(httpClient *http.Client, submission Submission, problem Problem, index int, session, csrfToken string) bool {
 	code, err := getSubmissionDetails(httpClient, submission.ID, submissionDetailsQuery, session, csrfToken)
 	if err != nil {
 		log.Printf("Failed to fetch details for submission %s: %v", submission.ID, err)
