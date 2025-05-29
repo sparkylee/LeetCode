@@ -22,7 +22,7 @@ const (
 	limitPerRequest = 20
 	queryFile       = "query.graphql"
 	cookieFile      = "leetcode.com_cookies.txt"
-	maxProblems     = 3
+	maxProblems     = -1
 )
 
 var (
