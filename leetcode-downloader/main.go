@@ -220,16 +220,29 @@ func main() {
 		return
 	}
 
-	// Normal operation mode
+	// Fetch and process problems
+	if err := processSolvedProblems(httpClient, session, csrfToken, problemsetQuery, submissionListQuery, submissionDetailsQuery); err != nil {
+		log.Fatalf("Failed to process problems: %v", err)
+	}
+}
+
+func processSolvedProblems(httpClient *http.Client, session, csrfToken, problemsetQuery, submissionListQuery, submissionDetailsQuery string) error {
+	// Fetch problems
 	problems, err := fetchSolvedProblemList(httpClient, session, csrfToken, problemsetQuery, maxProblems)
 	if err != nil {
-		log.Fatalf("Failed to fetch submissions: %v", err)
+		return fmt.Errorf("failed to fetch submissions: %w", err)
 	}
 	if problems == nil || len(problems) == 0 {
 		log.Printf("No solved problems found for the user")
-		return
+		return nil
 	}
 
+	totalProcessed := processProblems(httpClient, problems, session, csrfToken, submissionListQuery, submissionDetailsQuery)
+	log.Printf("Completed processing %d problems with %d total submissions", len(problems), totalProcessed)
+	return nil
+}
+
+func processProblems(httpClient *http.Client, problems []Problem, session, csrfToken, submissionListQuery, submissionDetailsQuery string) int {
 	totalProcessed := 0
 	for _, problem := range problems {
 		// Create directory for the problem
@@ -243,8 +256,7 @@ func main() {
 		count := fetchSubmissionsForProblem(httpClient, problem, session, csrfToken, submissionListQuery, submissionDetailsQuery)
 		totalProcessed += count
 	}
-
-	log.Printf("Completed processing %d problems with %d total submissions", len(problems), totalProcessed)
+	return totalProcessed
 }
 func parseCookies() (string, string, error) {
 	data, err := os.ReadFile(cookieFile)
@@ -508,6 +520,10 @@ func fetchSubmissionsForProblem(httpClient *http.Client, problem Problem, sessio
 		return 0
 	}
 
+	return processSubmissions(httpClient, submissions, problem, session, csrfToken, submissionDetailsQuery)
+}
+
+func processSubmissions(httpClient *http.Client, submissions []Submission, problem Problem, session, csrfToken, submissionDetailsQuery string) int {
 	total := len(submissions)
 	totalSubmissions := 0
 
@@ -518,17 +534,9 @@ func fetchSubmissionsForProblem(httpClient *http.Client, problem Problem, sessio
 		progressbar.OptionShowIts())
 
 	for i, submission := range submissions {
-		code, err := getSubmissionDetails(httpClient, submission.ID, submissionDetailsQuery, session, csrfToken)
-		if err != nil {
-			log.Printf("Failed to fetch details for submission %s: %v", submission.ID, err)
-			code = "// Code not available"
+		if processSubmission(httpClient, submission, problem, i, session, csrfToken, submissionDetailsQuery) {
+			totalSubmissions++
 		}
-
-		if err := saveSubmission(submission, code, i, problem); err != nil {
-			log.Printf("Failed to save submission %s: %v", submission.ID, err)
-		}
-
-		totalSubmissions++
 		bar.Add(1)
 		time.Sleep(500 * time.Millisecond)
 	}
@@ -538,6 +546,19 @@ func fetchSubmissionsForProblem(httpClient *http.Client, problem Problem, sessio
 	return totalSubmissions
 }
 
+func processSubmission(httpClient *http.Client, submission Submission, problem Problem, index int, session, csrfToken, submissionDetailsQuery string) bool {
+	code, err := getSubmissionDetails(httpClient, submission.ID, submissionDetailsQuery, session, csrfToken)
+	if err != nil {
+		log.Printf("Failed to fetch details for submission %s: %v", submission.ID, err)
+		code = "// Code not available"
+	}
+
+	if err := saveSubmission(submission, code, index, problem); err != nil {
+		log.Printf("Failed to save submission %s: %v", submission.ID, err)
+		return false
+	}
+	return true
+}
 func getSubmissionDetails(httpClient *http.Client, submissionID, query, session, csrfToken string) (string, error) {
 	request := &GraphQLRequest{
 		Query: query,
@@ -546,7 +567,7 @@ func getSubmissionDetails(httpClient *http.Client, submissionID, query, session,
 		},
 		OperationName: "submissionDetails",
 	}
-	//1627257755
+
 	response, err := makeGraphQLRequest[SubmissionDetailsResponse](httpClient, session, csrfToken, request)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch submission details: %w", err)
