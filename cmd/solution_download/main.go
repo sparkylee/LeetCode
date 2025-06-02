@@ -56,25 +56,6 @@ var (
 	}
 )
 
-type Problem struct {
-	ID                 int    `json:"id"` // Changed from string to int
-	TitleSlug          string `json:"titleSlug"`
-	Title              string `json:"title"`
-	TranslatedTitle    string `json:"translatedTitle"`
-	QuestionFrontendID string `json:"questionFrontendId"`
-	PaidOnly           bool   `json:"paidOnly"`
-	Difficulty         string `json:"difficulty"`
-	TopicTags          []struct {
-		Name           string `json:"name"`
-		Slug           string `json:"slug"`
-		NameTranslated string `json:"nameTranslated"`
-	} `json:"topicTags"`
-	Status          string  `json:"status"`
-	IsInMyFavorites bool    `json:"isInMyFavorites"`
-	Frequency       float64 `json:"frequency"`
-	AcRate          float64 `json:"acRate"`
-}
-
 type Submission struct {
 	ID            string `json:"id"`
 	Title         string `json:"title"`
@@ -190,7 +171,7 @@ func processSolvedProblems(httpClient *http.Client, session, csrfToken string) e
 	return nil
 }
 
-func processProblems(httpClient *http.Client, problems []Problem, session, csrfToken string) int {
+func processProblems(httpClient *http.Client, problems []utils.Problem, session, csrfToken string) int {
 	totalProcessed := 0
 	for _, problem := range problems {
 		// Create directory for the problem
@@ -209,7 +190,7 @@ func processProblems(httpClient *http.Client, problems []Problem, session, csrfT
 
 func loadQueries() error {
 	var err error
-	problemsetQuery, submissionListQuery, submissionDetailsQuery, err = utils.ParseQueries(queryFile)
+	problemsetQuery, submissionListQuery, submissionDetailsQuery, _, err = utils.ParseQueries(queryFile)
 	if err != nil {
 		return fmt.Errorf("failed to load queries: %w", err)
 	}
@@ -262,8 +243,8 @@ func fetchSubmissionListForProblem(httpClient *http.Client, session, csrfToken, 
 	return submissions, nil
 }
 
-func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, maxCount int) ([]Problem, error) {
-	var problems []Problem
+func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, maxCount int) ([]utils.Problem, error) {
+	var problems []utils.Problem
 	limit := limitPerRequest
 	skip := 0
 
@@ -302,9 +283,9 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 		type Response struct {
 			Data struct {
 				ProblemsetQuestionListV2 struct {
-					Questions  []Problem `json:"questions"`
-					TotalCount int       `json:"totalCount"`
-					HasMore    bool      `json:"hasMore"`
+					Questions  []utils.Problem `json:"questions"`
+					TotalCount int             `json:"totalCount"`
+					HasMore    bool            `json:"hasMore"`
 				} `json:"problemsetQuestionListV2"`
 			} `json:"data"`
 		}
@@ -332,7 +313,7 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 	return problems, nil
 }
 
-func fetchSubmissionsForProblem(httpClient *http.Client, problem Problem, session, csrfToken string) int {
+func fetchSubmissionsForProblem(httpClient *http.Client, problem utils.Problem, session, csrfToken string) int {
 	// Get the list of submissions
 	submissions, err := fetchSubmissionListForProblem(httpClient, session, csrfToken, problem.TitleSlug)
 	if err != nil {
@@ -342,7 +323,7 @@ func fetchSubmissionsForProblem(httpClient *http.Client, problem Problem, sessio
 	return processSubmissions(httpClient, submissions, problem, session, csrfToken)
 }
 
-func processSubmissions(httpClient *http.Client, submissions []Submission, problem Problem, session, csrfToken string) int {
+func processSubmissions(httpClient *http.Client, submissions []Submission, problem utils.Problem, session, csrfToken string) int {
 	total := len(submissions)
 	totalSubmissions := 0
 
@@ -365,7 +346,7 @@ func processSubmissions(httpClient *http.Client, submissions []Submission, probl
 	return totalSubmissions
 }
 
-func processSubmission(httpClient *http.Client, submission Submission, problem Problem, index int, session, csrfToken string) bool {
+func processSubmission(httpClient *http.Client, submission Submission, problem utils.Problem, index int, session, csrfToken string) bool {
 	code, err := getSubmissionDetails(httpClient, submission.ID, submissionDetailsQuery, session, csrfToken)
 	if err != nil {
 		log.Printf("Failed to fetch details for submission %s: %v", submission.ID, err)
@@ -400,7 +381,7 @@ func getQuestionDirectory(id int, title string) string {
 	return filepath.Join("solutions", dirName)
 }
 
-func saveSubmission(submission Submission, code string, index int, problem Problem) error {
+func saveSubmission(submission Submission, code string, index int, problem utils.Problem) error {
 	// Get the target directory using problem ID
 	dir := getQuestionDirectory(problem.ID, problem.Title)
 

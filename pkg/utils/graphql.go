@@ -23,9 +23,11 @@ type DebugConfig struct {
 	TestSlug         string `yaml:"testSlug"`
 	TestSubmissionID string `yaml:"testSubmissionId"`
 	Debug            bool   `yaml:"debug"`
+	FavoriteSlug     string `yaml:"favoriteSlug"`
 }
 
 var debugLog = log.New(io.Discard, "[DEBUG] ", log.LstdFlags)
+var graphqlEndpoint = "https://leetcode.com/graphql"
 
 func InitDebugLogger(config *DebugConfig) {
 	if config != nil && config.Debug {
@@ -153,4 +155,40 @@ func ParseQueries(queryFile string) (string, string, string, string, error) {
 	}
 
 	return problemsetQuery, submissionListQuery, submissionDetailsQuery, favoriteListQuery, nil
+}
+
+func ExtractQuery(content, queryName string) (string, error) {
+	// Create a temporary file with the content
+	tmpFile, err := os.CreateTemp("", "query-*.graphql")
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.WriteString(content); err != nil {
+		return "", fmt.Errorf("failed to write content to temp file: %w", err)
+	}
+	if err := tmpFile.Close(); err != nil {
+		return "", fmt.Errorf("failed to close temp file: %w", err)
+	}
+
+	// Call ParseQueries with our temp file
+	problemsetQuery, submissionListQuery, submissionDetailsQuery, favoriteListQuery, err := ParseQueries(tmpFile.Name())
+	if err != nil {
+		return "", err
+	}
+
+	// Return the requested query based on name
+	switch queryName {
+	case "problemsetQuestionListV2":
+		return problemsetQuery, nil
+	case "submissionList":
+		return submissionListQuery, nil
+	case "submissionDetails":
+		return submissionDetailsQuery, nil
+	case "favoriteQuestionList":
+		return favoriteListQuery, nil
+	}
+
+	return "", fmt.Errorf("query %s not found", queryName)
 }
