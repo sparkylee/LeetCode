@@ -1,15 +1,14 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/schollz/progressbar/v3"
 	"github.com/vektah/gqlparser/v2/ast"
 	_ "github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
-	"gopkg.in/yaml.v3"
+	_ "gopkg.in/yaml.v3"
 	"io"
+	"leetcode/pkg/utils"
 	"log"
 	"net/http"
 	"os"
@@ -30,7 +29,7 @@ var (
 	submissionListQuery    string
 	submissionDetailsQuery string
 )
-var debugLog = log.New(io.Discard, "[DEBUG] ", log.LstdFlags)
+
 var (
 	langExt = map[string]string{
 		"cpp":        "cpp",
@@ -116,29 +115,8 @@ type SubmissionDetailsResponse struct {
 		} `json:"submissionDetails"`
 	} `json:"data"`
 }
-type DebugConfig struct {
-	TestSlug         string `yaml:"testSlug"`
-	TestSubmissionID string `yaml:"testSubmissionId"`
-	Debug            bool   `yaml:"debug"`
-}
 
-func loadDebugConfig() (*DebugConfig, error) {
-	data, err := os.ReadFile("debug.yaml")
-	if err != nil {
-		if os.IsNotExist(err) {
-			return &DebugConfig{}, nil // Return empty config if file doesn't exist
-		}
-		return nil, fmt.Errorf("failed to read debug config: %w", err)
-	}
-
-	var config DebugConfig
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("failed to parse debug config: %w", err)
-	}
-
-	return &config, nil
-}
-func handleDebugMode(debugConfig *DebugConfig, httpClient *http.Client, session, csrfToken string) bool {
+func handleDebugMode(debugConfig *utils.DebugConfig, httpClient *http.Client, session, csrfToken string) bool {
 	// Load debug config
 	if debugConfig == nil {
 		log.Println("No debug config found, running in normal mode")
@@ -162,26 +140,20 @@ func handleDebugMode(debugConfig *DebugConfig, httpClient *http.Client, session,
 	//}
 	return false
 }
-func initDebugLogger(config *DebugConfig) {
-	if config != nil && config.Debug {
-		debugLog = log.New(os.Stdout, "[DEBUG] ", log.LstdFlags)
-	} else {
-		debugLog = log.New(io.Discard, "[DEBUG] ", log.LstdFlags)
-	}
-}
+
 func main() {
 	// Load queries
-	debugConfig, err := loadDebugConfig()
+	debugConfig, err := utils.LoadDebugConfig()
 	if err != nil {
 		log.Fatalf("Failed to load debug config: %v", err)
 	}
-	initDebugLogger(debugConfig)
+	utils.InitDebugLogger(debugConfig)
 	if err := loadQueries(); err != nil {
 		log.Fatalf("Failed to load queries: %v", err)
 	}
 
 	// Parse cookies
-	session, csrfToken, err := parseCookies()
+	session, csrfToken, err := utils.ParseCookies(cookieFile)
 	if err != nil {
 		log.Fatalf("Failed to parse cookies: %v", err)
 	}
@@ -238,43 +210,7 @@ func processProblems(httpClient *http.Client, problems []Problem, session, csrfT
 	}
 	return totalProcessed
 }
-func parseCookies() (string, string, error) {
-	data, err := os.ReadFile(cookieFile)
-	if err != nil {
-		return "", "", fmt.Errorf("cookies.txt not found: %w", err)
-	}
 
-	lines := strings.Split(string(data), "\n")
-	var session, csrfToken string
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		parts := strings.Fields(line)
-		if len(parts) < 7 {
-			continue
-		}
-		domain, name, value := parts[0], parts[5], parts[6]
-		if domain != ".leetcode.com" && domain != "leetcode.com" {
-			continue
-		}
-		if name == "LEETCODE_SESSION" {
-			session = value
-		} else if name == "csrftoken" {
-			csrfToken = value
-		}
-	}
-
-	if session == "" {
-		return "", "", fmt.Errorf("LEETCODE_SESSION not found in cookies.txt")
-	}
-	if csrfToken == "" {
-		return "", "", fmt.Errorf("csrftoken not found in cookies.txt")
-	}
-
-	return session, csrfToken, nil
-}
 func loadQueries() error {
 	var err error
 	problemsetQuery, submissionListQuery, submissionDetailsQuery, err = parseQueries()
@@ -337,61 +273,13 @@ func parseQueries() (string, string, string, error) {
 	return problemsetQuery, submissionListQuery, submissionDetailsQuery, nil
 }
 
-type GraphQLRequest struct {
-	Query         string                 `json:"query"`
-	Variables     map[string]interface{} `json:"variables"`
-	OperationName string                 `json:"operationName"`
-}
-
-func makeGraphQLRequest[T any](httpClient *http.Client, session, csrfToken string, request *GraphQLRequest) (*T, error) {
-	bodyBytes, err := json.Marshal(request)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request body: %v", err)
-	}
-	debugLog.Printf("Request body: %s", string(bodyBytes))
-
-	req, err := http.NewRequest("POST", "https://leetcode.com/graphql", bytes.NewBuffer(bodyBytes))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %v", err)
-	}
-
-	// Set common headers
-	req.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
-	req.Header.Set("X-CSRFToken", csrfToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Referer", "https://leetcode.com")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	bodyBytes, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
-	}
-	debugLog.Printf("Response body: %s", string(bodyBytes))
-
-	// Create a new reader with the bytes for decoding the JSON
-	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
-	var response T
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %v", err)
-	}
-
-	return &response, nil
-}
-
 func fetchSubmissionListForProblem(httpClient *http.Client, session, csrfToken, titleSlug string) ([]Submission, error) {
 	var submissions []Submission
 	limit := limitPerRequest
 	offset := 0
 
 	for {
-		request := &GraphQLRequest{
+		request := &utils.GraphQLRequest{
 			Query: submissionListQuery,
 			Variables: map[string]interface{}{
 				"offset":       offset,
@@ -414,7 +302,7 @@ func fetchSubmissionListForProblem(httpClient *http.Client, session, csrfToken, 
 			} `json:"data"`
 		}
 
-		response, err := makeGraphQLRequest[Response](httpClient, session, csrfToken, request)
+		response, err := utils.MakeGraphQLRequest[Response](httpClient, session, csrfToken, request)
 		if err != nil {
 			return nil, err
 		}
@@ -437,7 +325,7 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 	skip := 0
 
 	for {
-		request := &GraphQLRequest{
+		request := &utils.GraphQLRequest{
 			Query: problemsetQuery,
 			Variables: map[string]interface{}{
 				"filters": map[string]interface{}{
@@ -478,7 +366,7 @@ func fetchSolvedProblemList(httpClient *http.Client, session, csrfToken string, 
 			} `json:"data"`
 		}
 
-		response, err := makeGraphQLRequest[Response](httpClient, session, csrfToken, request)
+		response, err := utils.MakeGraphQLRequest[Response](httpClient, session, csrfToken, request)
 		if err != nil {
 			return nil, err
 		}
@@ -548,7 +436,7 @@ func processSubmission(httpClient *http.Client, submission Submission, problem P
 	return true
 }
 func getSubmissionDetails(httpClient *http.Client, submissionID, query, session, csrfToken string) (string, error) {
-	request := &GraphQLRequest{
+	request := &utils.GraphQLRequest{
 		Query: query,
 		Variables: map[string]interface{}{
 			"submissionId": submissionID,
@@ -556,7 +444,7 @@ func getSubmissionDetails(httpClient *http.Client, submissionID, query, session,
 		OperationName: "submissionDetails",
 	}
 
-	response, err := makeGraphQLRequest[SubmissionDetailsResponse](httpClient, session, csrfToken, request)
+	response, err := utils.MakeGraphQLRequest[SubmissionDetailsResponse](httpClient, session, csrfToken, request)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch submission details: %w", err)
 	}
