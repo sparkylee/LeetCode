@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/vektah/gqlparser/v2/parser"
 	"gopkg.in/yaml.v3"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type GraphQLRequest struct {
@@ -87,4 +90,59 @@ func MakeGraphQLRequest[T any](httpClient *http.Client, session, csrfToken strin
 	}
 
 	return &response, nil
+}
+
+// ParseQueries reads a GraphQL query file and extracts specific queries by name.
+func ParseQueries(queryFile string) (string, string, string, error) {
+	data, err := os.ReadFile(queryFile)
+	if err != nil {
+		return "", "", "", fmt.Errorf("query.graphql not found: %w", err)
+	}
+
+	content := string(data)
+	// Parse GraphQL file into AST without schema validation
+	doc, gqlErr := parser.ParseQuery(&ast.Source{Name: "query.graphql", Input: content})
+	if gqlErr != nil {
+		return "", "", "", fmt.Errorf("failed to parse query.graphql: %v", gqlErr)
+	}
+
+	// Extract queries by name
+	queries := make(map[string]string)
+	for _, op := range doc.Operations {
+		if op.Operation != "query" || op.Name == "" {
+			continue
+		}
+		// Extract query text using Position
+		if op.Position == nil {
+			log.Printf("Warning: No position data for query %s", op.Name)
+			continue
+		}
+		// Use Start and find end position
+		start := op.Position.Start
+		// Find end by searching for the next operation or end of file
+		end := len(content)
+		for _, nextOp := range doc.Operations {
+			if nextOp.Position != nil && nextOp.Position.Start > start && nextOp.Position.Start < end {
+				end = nextOp.Position.Start
+			}
+		}
+		queryText := strings.TrimSpace(content[start:end])
+		queries[op.Name] = queryText
+		log.Printf("Parsed query %s: %s", op.Name, queryText)
+	}
+
+	problemsetQuery, ok := queries["problemsetQuestionListV2"]
+	if !ok {
+		return "", "", "", fmt.Errorf("problemsetQuestionListV2 query not found")
+	}
+	submissionListQuery, ok := queries["submissionList"]
+	if !ok {
+		return "", "", "", fmt.Errorf("submissionList query not found")
+	}
+	submissionDetailsQuery, ok := queries["submissionDetails"]
+	if !ok {
+		return "", "", "", fmt.Errorf("submissionDetails query not found")
+	}
+
+	return problemsetQuery, submissionListQuery, submissionDetailsQuery, nil
 }
