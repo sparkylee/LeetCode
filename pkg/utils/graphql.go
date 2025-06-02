@@ -50,6 +50,14 @@ func LoadDebugConfig() (*DebugConfig, error) {
 
 	return &config, nil
 }
+
+func setupHeaders(req *http.Request, session, csrfToken string) {
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Cookie", fmt.Sprintf("LEETCODE_SESSION=%s; csrftoken=%s", session, csrfToken))
+	req.Header.Set("X-Csrftoken", csrfToken)
+	req.Header.Set("X-Requested-With", "XMLHttpRequest")
+}
+
 func MakeGraphQLRequest[T any](httpClient *http.Client, session, csrfToken string, request *GraphQLRequest) (*T, error) {
 	bodyBytes, err := json.Marshal(request)
 	if err != nil {
@@ -93,17 +101,16 @@ func MakeGraphQLRequest[T any](httpClient *http.Client, session, csrfToken strin
 }
 
 // ParseQueries reads a GraphQL query file and extracts specific queries by name.
-func ParseQueries(queryFile string) (string, string, string, error) {
+func ParseQueries(queryFile string) (string, string, string, string, error) {
 	data, err := os.ReadFile(queryFile)
 	if err != nil {
-		return "", "", "", fmt.Errorf("query.graphql not found: %w", err)
+		return "", "", "", "", fmt.Errorf("query.graphql not found: %w", err)
 	}
 
 	content := string(data)
-	// Parse GraphQL file into AST without schema validation
 	doc, gqlErr := parser.ParseQuery(&ast.Source{Name: "query.graphql", Input: content})
 	if gqlErr != nil {
-		return "", "", "", fmt.Errorf("failed to parse query.graphql: %v", gqlErr)
+		return "", "", "", "", fmt.Errorf("failed to parse query.graphql: %v", gqlErr)
 	}
 
 	// Extract queries by name
@@ -112,14 +119,11 @@ func ParseQueries(queryFile string) (string, string, string, error) {
 		if op.Operation != "query" || op.Name == "" {
 			continue
 		}
-		// Extract query text using Position
 		if op.Position == nil {
 			log.Printf("Warning: No position data for query %s", op.Name)
 			continue
 		}
-		// Use Start and find end position
 		start := op.Position.Start
-		// Find end by searching for the next operation or end of file
 		end := len(content)
 		for _, nextOp := range doc.Operations {
 			if nextOp.Position != nil && nextOp.Position.Start > start && nextOp.Position.Start < end {
@@ -133,16 +137,20 @@ func ParseQueries(queryFile string) (string, string, string, error) {
 
 	problemsetQuery, ok := queries["problemsetQuestionListV2"]
 	if !ok {
-		return "", "", "", fmt.Errorf("problemsetQuestionListV2 query not found")
+		return "", "", "", "", fmt.Errorf("problemsetQuestionListV2 query not found")
 	}
 	submissionListQuery, ok := queries["submissionList"]
 	if !ok {
-		return "", "", "", fmt.Errorf("submissionList query not found")
+		return "", "", "", "", fmt.Errorf("submissionList query not found")
 	}
 	submissionDetailsQuery, ok := queries["submissionDetails"]
 	if !ok {
-		return "", "", "", fmt.Errorf("submissionDetails query not found")
+		return "", "", "", "", fmt.Errorf("submissionDetails query not found")
+	}
+	favoriteListQuery, ok := queries["favoriteQuestionList"]
+	if !ok {
+		return "", "", "", "", fmt.Errorf("favoriteQuestionList query not found")
 	}
 
-	return problemsetQuery, submissionListQuery, submissionDetailsQuery, nil
+	return problemsetQuery, submissionListQuery, submissionDetailsQuery, favoriteListQuery, nil
 }
